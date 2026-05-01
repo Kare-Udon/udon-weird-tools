@@ -1,0 +1,30 @@
+---
+import ToolCard from '@/components/ToolCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { type Locale } from '@/i18n/config';
+import { t } from '@/i18n/ui';
+import { categoryOrder, getCategoryLabel, getToolsByCategory } from '@/tools/registry';
+
+const { locale } = Astro.props as { locale: Locale };
+---
+
+<BaseLayout locale={locale} path="/tools" title={t(locale, 'toolsTitle')} description={t(locale, 'toolsDescription')}>
+  <section class="page-heading">
+    <h1>{t(locale, 'toolsTitle')}</h1>
+    <p>{t(locale, 'toolsDescription')}</p>
+  </section>
+
+  {categoryOrder.map((category) => {
+    const items = getToolsByCategory(category);
+    if (items.length === 0) return null;
+
+    return (
+      <section class="section-block">
+        <h2>{getCategoryLabel(category, locale)}</h2>
+        <div class="tool-grid">
+          {items.map((tool) => <ToolCard tool={tool} locale={locale} />)}
+        </div>
+      </section>
+    );
+  })}
+</BaseLayout>

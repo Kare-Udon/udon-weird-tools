@@ -1,0 +1,16 @@
+---
+import ToolDetailPage from '@/components/pages/ToolDetailPage.astro';
+import { defaultLocale } from '@/i18n/config';
+import { tools } from '@/tools/registry';
+
+export function getStaticPaths() {
+  return tools.map((tool) => ({
+    params: { slug: tool.slug },
+    props: { tool },
+  }));
+}
+
+const { tool } = Astro.props;
+---
+
+<ToolDetailPage locale={defaultLocale} tool={tool} />

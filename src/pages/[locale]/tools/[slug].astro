@@ -1,0 +1,18 @@
+---
+import ToolDetailPage from '@/components/pages/ToolDetailPage.astro';
+import { prefixedLocales, type Locale } from '@/i18n/config';
+import { tools } from '@/tools/registry';
+
+export function getStaticPaths() {
+  return prefixedLocales.flatMap((locale) =>
+    tools.map((tool) => ({
+      params: { locale, slug: tool.slug },
+      props: { locale, tool },
+    })),
+  );
+}
+
+const { locale, tool } = Astro.props as { locale: Locale; tool: (typeof tools)[number] };
+---
+
+<ToolDetailPage locale={locale} tool={tool} />

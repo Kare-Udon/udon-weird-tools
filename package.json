@@ -1,0 +1,26 @@
+{
+  "name": "weird-tools-starter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A static-first, i18n-ready Astro + TypeScript + React starter for browser-only personal tools.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "npm run validate:tools && astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check",
+    "validate:tools": "node scripts/validate-tools.mjs"
+  },
+  "dependencies": {
+    "@astrojs/react": "^5.0.4",
+    "astro": "^6.2.1",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.3"
+  }
+}

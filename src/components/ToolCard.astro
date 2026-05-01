@@ -1,0 +1,24 @@
+---
+import { type Locale } from '@/i18n/config';
+import { t } from '@/i18n/ui';
+import { localize, pathForLocale } from '@/i18n/utils';
+import { getCategoryLabel } from '@/tools/registry';
+import type { ToolManifest } from '@/tools/_types';
+
+const { tool, locale } = Astro.props as {
+  tool: ToolManifest;
+  locale: Locale;
+};
+---
+
+<a class="tool-card" href={pathForLocale(locale, `/tools/${tool.slug}`)}>
+  <div class="tool-card-meta">
+    <span>{getCategoryLabel(tool.category, locale)}</span>
+    <span>{tool.status === 'stable' ? t(locale, 'statusStable') : t(locale, 'statusExperimental')}</span>
+  </div>
+  <h3>{localize(tool.i18n.name, locale)}</h3>
+  <p>{localize(tool.i18n.description, locale)}</p>
+  <div class="tag-row">
+    {tool.tags.map((tag) => <span>{tag}</span>)}
+  </div>
+</a>

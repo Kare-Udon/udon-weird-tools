@@ -1,0 +1,36 @@
+---
+import ToolPlayground from '@/components/ToolPlayground';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { type Locale } from '@/i18n/config';
+import { t } from '@/i18n/ui';
+import { localize } from '@/i18n/utils';
+import { getCategoryLabel } from '@/tools/registry';
+import type { ToolManifest } from '@/tools/_types';
+
+const { locale, tool } = Astro.props as {
+  locale: Locale;
+  tool: ToolManifest;
+};
+
+const toolName = localize(tool.i18n.name, locale);
+const toolDescription = localize(tool.i18n.description, locale);
+---
+
+<BaseLayout locale={locale} path={`/tools/${tool.slug}`} title={toolName} description={toolDescription}>
+  <article class="tool-detail">
+    <header class="page-heading">
+      <div class="tool-card-meta inline-meta">
+        <span>{getCategoryLabel(tool.category, locale)}</span>
+        <span>{tool.status === 'stable' ? t(locale, 'statusStable') : t(locale, 'statusExperimental')}</span>
+        <span>{tool.version}</span>
+      </div>
+      <h1>{toolName}</h1>
+      <p>{toolDescription}</p>
+      <div class="tag-row">
+        {tool.tags.map((tag) => <span>{tag}</span>)}
+      </div>
+    </header>
+
+    <ToolPlayground client:load slug={tool.slug} locale={locale} />
+  </article>
+</BaseLayout>

@@ -1,0 +1,32 @@
+---
+import ToolCard from '@/components/ToolCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { type Locale } from '@/i18n/config';
+import { t } from '@/i18n/ui';
+import { pathForLocale } from '@/i18n/utils';
+import { tools } from '@/tools/registry';
+
+const { locale } = Astro.props as { locale: Locale };
+---
+
+<BaseLayout locale={locale} path="/" description={t(locale, 'siteDescription')}>
+  <section class="hero">
+    <p class="eyebrow">{t(locale, 'heroEyebrow')}</p>
+    <h1>{t(locale, 'heroTitle')}</h1>
+    <p>{t(locale, 'heroDescription')}</p>
+    <div class="button-row">
+      <a class="button primary" href={pathForLocale(locale, '/tools')}>{t(locale, 'heroPrimaryAction')}</a>
+      <a class="button" href="https://github.com/" rel="noreferrer">{t(locale, 'heroSecondaryAction')}</a>
+    </div>
+  </section>
+
+  <section class="section-block">
+    <div class="section-heading">
+      <h2>{t(locale, 'homeToolsTitle')}</h2>
+      <p>{t(locale, 'homeToolsDescription')}</p>
+    </div>
+    <div class="tool-grid">
+      {tools.map((tool) => <ToolCard tool={tool} locale={locale} />)}
+    </div>
+  </section>
+</BaseLayout>
