@@ -32,6 +32,16 @@ Build command: npm run build
 Build output directory: dist
 ```
 
+Cloudflare Pages Git 集成：
+
+```text
+Project name: udon-weird-tools
+Production branch: main
+Repository: Kare-Udon/udon-weird-tools
+Production deploys: enabled for main
+Preview deploys: enabled for all branches
+```
+
 ## 目录结构
 
 ```text
