@@ -1,0 +1,14 @@
+---
+import PlainPage from '@/components/pages/PlainPage.astro';
+import { defaultLocale, isLocale, prefixedLocales } from '@/i18n/config';
+import { t } from '@/i18n/ui';
+
+export function getStaticPaths() {
+  return prefixedLocales.map((locale) => ({ params: { locale } }));
+}
+
+const { locale: rawLocale } = Astro.params;
+const locale = isLocale(rawLocale) ? rawLocale : defaultLocale;
+---
+
+<PlainPage locale={locale} path="/about" title={t(locale, 'aboutTitle')} description={t(locale, 'aboutDescription')} />

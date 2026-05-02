@@ -19,10 +19,12 @@ export const manifest = {
     name: {
       'zh-CN': '命名风格转换器',
       en: 'Case Converter',
+      ja: 'ケース変換',
     },
     description: {
       'zh-CN': '把短语、变量名或多行文本转换成 camelCase、snake_case、kebab-case 等格式。',
       en: 'Convert phrases, variable names, or multiline text into camelCase, snake_case, kebab-case, and more.',
+      ja: 'フレーズ、変数名、複数行テキストを camelCase、snake_case、kebab-case などに変換します。',
     },
   },
 } as const satisfies ToolManifest;

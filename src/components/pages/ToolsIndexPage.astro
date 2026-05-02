@@ -1,30 +1,36 @@
 ---
-import ToolCard from '@/components/ToolCard.astro';
+import ToolDirectory from '@/components/ToolDirectory';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { type Locale } from '@/i18n/config';
 import { t } from '@/i18n/ui';
-import { categoryOrder, getCategoryLabel, getToolsByCategory } from '@/tools/registry';
+import { localize, pathForLocale } from '@/i18n/utils';
+import { getCategoryLabel, tools } from '@/tools/registry';
 
 const { locale } = Astro.props as { locale: Locale };
+
+const directoryTools = tools.map((tool) => ({
+  slug: tool.slug,
+  href: pathForLocale(locale, `/tools/${tool.slug}`),
+  name: localize(tool.i18n.name, locale),
+  description: localize(tool.i18n.description, locale),
+  category: getCategoryLabel(tool.category, locale),
+  tags: tool.tags,
+}));
+
+const labels = {
+  title: t(locale, 'toolsTitle'),
+  searchPlaceholder: t(locale, 'toolSearchPlaceholder'),
+  viewLabel: t(locale, 'toolViewLabel'),
+  listView: t(locale, 'toolViewList'),
+  cardView: t(locale, 'toolViewCard'),
+  compactView: t(locale, 'toolViewCompact'),
+  countSuffix: t(locale, 'toolCountSuffix'),
+  nameColumn: t(locale, 'toolNameColumn'),
+  categoryColumn: t(locale, 'toolCategoryColumn'),
+  tagsColumn: t(locale, 'toolTagsColumn'),
+};
 ---
 
 <BaseLayout locale={locale} path="/tools" title={t(locale, 'toolsTitle')} description={t(locale, 'toolsDescription')}>
-  <section class="page-heading">
-    <h1>{t(locale, 'toolsTitle')}</h1>
-    <p>{t(locale, 'toolsDescription')}</p>
-  </section>
-
-  {categoryOrder.map((category) => {
-    const items = getToolsByCategory(category);
-    if (items.length === 0) return null;
-
-    return (
-      <section class="section-block">
-        <h2>{getCategoryLabel(category, locale)}</h2>
-        <div class="tool-grid">
-          {items.map((tool) => <ToolCard tool={tool} locale={locale} />)}
-        </div>
-      </section>
-    );
-  })}
+  <ToolDirectory client:load locale={locale} tools={directoryTools} labels={labels} />
 </BaseLayout>

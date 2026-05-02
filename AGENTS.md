@@ -45,31 +45,42 @@ Astro + TypeScript + React
 - 不把项目改成 SPA-only，除非有明确重构决策。
 - React 只用于需要交互的 islands；普通页面优先使用 Astro 组件。
 
-## 3. i18n 规则
+## 3. i18n Rules
 
-默认语言是 `zh-CN`，第二语言是 `en`。
+The default language is `en`. The supported languages are `en`, `ja`, and `zh-CN`.
 
-路由约定：
+Route convention:
 
 ```text
-/                         默认中文首页
-/tools                    默认中文工具列表
-/tools/<slug>             默认中文工具页
-/en                       英文首页
-/en/tools                 英文工具列表
-/en/tools/<slug>          英文工具页
+/                         English home
+/tools                    English tool list
+/tools/<slug>             English tool page
+/ja                       Japanese home
+/ja/tools                 Japanese tool list
+/ja/tools/<slug>          Japanese tool page
+/zh-CN                    Chinese home
+/zh-CN/tools              Chinese tool list
+/zh-CN/tools/<slug>       Chinese tool page
 ```
 
-规则：
+Rules:
 
-- 新增全局 UI 文案必须写入 `src/i18n/ui.ts`。
-- 新增工具文案必须写在工具 manifest、schema 和 examples 的 localized fields 中。
-- 不要在页面组件中散落硬编码的用户可见文案。
-- 每个工具必须至少提供 `zh-CN` 和 `en` 两套名称、描述、字段标签和示例名称。
-- 默认中文路径不加语言前缀。
-- 新语言应先扩展 `src/i18n/config.ts`，再补齐所有字典和工具文案。
+- Put new global UI copy in `src/i18n/ui.ts`.
+- Put tool copy in localized fields inside the tool manifest, schema, and examples.
+- Do not scatter user-facing copy through page components.
+- Every tool must provide `en`, `ja`, and `zh-CN` names, descriptions, field labels, and example names.
+- The default English routes do not use a language prefix.
+- Add a new language in `src/i18n/config.ts` first, then fill every dictionary and tool copy field.
 
 ## 4. 工具模块契约
+
+Before adding a new tool, changing a tool schema, or modifying tool-detail UI, read:
+
+```text
+docs/tool-ui-guidelines.md
+```
+
+Treat that document as the shared UI contract for tool forms, action rows, output states, desktop checks, and mobile checks.
 
 每个工具必须位于：
 
@@ -201,9 +212,9 @@ public/_headers
 [ ] src/tools/<slug>/examples.ts 已创建
 [ ] src/tools/<slug>/index.ts 已创建
 [ ] slug 与目录名一致
-[ ] manifest 文案包含 zh-CN 和 en
-[ ] 字段标签包含 zh-CN 和 en
-[ ] 示例名称包含 zh-CN 和 en
+[ ] manifest 文案包含 en、ja 和 zh-CN
+[ ] 字段标签包含 en、ja 和 zh-CN
+[ ] 示例名称包含 en、ja 和 zh-CN
 [ ] run.ts 不访问网络
 [ ] run.ts 不访问 localStorage / IndexedDB
 [ ] run.ts 不操作 DOM

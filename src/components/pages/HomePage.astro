@@ -1,32 +1,36 @@
 ---
-import ToolCard from '@/components/ToolCard.astro';
+import ToolDirectory from '@/components/ToolDirectory';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { type Locale } from '@/i18n/config';
 import { t } from '@/i18n/ui';
-import { pathForLocale } from '@/i18n/utils';
-import { tools } from '@/tools/registry';
+import { localize, pathForLocale } from '@/i18n/utils';
+import { getCategoryLabel, tools } from '@/tools/registry';
 
 const { locale } = Astro.props as { locale: Locale };
+
+const directoryTools = tools.map((tool) => ({
+  slug: tool.slug,
+  href: pathForLocale(locale, `/tools/${tool.slug}`),
+  name: localize(tool.i18n.name, locale),
+  description: localize(tool.i18n.description, locale),
+  category: getCategoryLabel(tool.category, locale),
+  tags: tool.tags,
+}));
+
+const labels = {
+  title: t(locale, 'toolsTitle'),
+  searchPlaceholder: t(locale, 'toolSearchPlaceholder'),
+  viewLabel: t(locale, 'toolViewLabel'),
+  listView: t(locale, 'toolViewList'),
+  cardView: t(locale, 'toolViewCard'),
+  compactView: t(locale, 'toolViewCompact'),
+  countSuffix: t(locale, 'toolCountSuffix'),
+  nameColumn: t(locale, 'toolNameColumn'),
+  categoryColumn: t(locale, 'toolCategoryColumn'),
+  tagsColumn: t(locale, 'toolTagsColumn'),
+};
 ---
 
-<BaseLayout locale={locale} path="/" description={t(locale, 'siteDescription')}>
-  <section class="hero">
-    <p class="eyebrow">{t(locale, 'heroEyebrow')}</p>
-    <h1>{t(locale, 'heroTitle')}</h1>
-    <p>{t(locale, 'heroDescription')}</p>
-    <div class="button-row">
-      <a class="button primary" href={pathForLocale(locale, '/tools')}>{t(locale, 'heroPrimaryAction')}</a>
-      <a class="button" href="https://github.com/" rel="noreferrer">{t(locale, 'heroSecondaryAction')}</a>
-    </div>
-  </section>
-
-  <section class="section-block">
-    <div class="section-heading">
-      <h2>{t(locale, 'homeToolsTitle')}</h2>
-      <p>{t(locale, 'homeToolsDescription')}</p>
-    </div>
-    <div class="tool-grid">
-      {tools.map((tool) => <ToolCard tool={tool} locale={locale} />)}
-    </div>
-  </section>
+<BaseLayout locale={locale} path="/" title={t(locale, 'toolsTitle')} description={t(locale, 'siteDescription')}>
+  <ToolDirectory client:load locale={locale} tools={directoryTools} labels={labels} />
 </BaseLayout>

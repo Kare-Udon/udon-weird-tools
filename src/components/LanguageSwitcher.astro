@@ -1,5 +1,6 @@
 ---
 import { localeLabels, locales, type Locale } from '@/i18n/config';
+import { t } from '@/i18n/ui';
 import { pathForLocale } from '@/i18n/utils';
 
 const { locale, path } = Astro.props as {
@@ -8,10 +9,13 @@ const { locale, path } = Astro.props as {
 };
 ---
 
-<nav class="language-switcher" aria-label="Language">
-  {locales.map((item) => (
-    <a class:list={[{ active: item === locale }]} href={pathForLocale(item, path)}>
-      {localeLabels[item]}
-    </a>
-  ))}
-</nav>
+<label class="language-select">
+  <span class="sr-only">{t(locale, 'languageLabel')}</span>
+  <select aria-label={t(locale, 'languageLabel')} data-language-select>
+    {locales.map((item) => (
+      <option value={pathForLocale(item, path)} selected={item === locale}>
+        {localeLabels[item]}
+      </option>
+    ))}
+  </select>
+</label>

@@ -1,0 +1,12 @@
+---
+import PlainPage from '@/components/pages/PlainPage.astro';
+import { defaultLocale } from '@/i18n/config';
+import { t } from '@/i18n/ui';
+---
+
+<PlainPage
+  locale={defaultLocale}
+  path="/about"
+  title={t(defaultLocale, 'aboutTitle')}
+  description={t(defaultLocale, 'aboutDescription')}
+/>

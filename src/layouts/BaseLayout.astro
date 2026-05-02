@@ -33,5 +33,33 @@ const pageDescription = description ?? t(locale, 'siteDescription');
         <span>{t(locale, 'footerNote')}</span>
       </footer>
     </div>
+    <script>
+      const root = document.documentElement;
+      const storedTheme = window.localStorage.getItem('udon-tools-theme');
+
+      if (storedTheme === 'dark') {
+        root.dataset.theme = 'dark';
+      }
+
+      document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+
+          if (nextTheme === 'dark') {
+            root.dataset.theme = 'dark';
+            window.localStorage.setItem('udon-tools-theme', 'dark');
+          } else {
+            delete root.dataset.theme;
+            window.localStorage.setItem('udon-tools-theme', 'light');
+          }
+        });
+      });
+
+      document.querySelectorAll<HTMLSelectElement>('[data-language-select]').forEach((select) => {
+        select.addEventListener('change', () => {
+          window.location.href = select.value;
+        });
+      });
+    </script>
   </body>
 </html>

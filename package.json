@@ -5,7 +5,7 @@
   "type": "module",
   "description": "A static-first, i18n-ready Astro + TypeScript + React starter for browser-only personal tools.",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "NODE_ENV=development astro dev --force",
     "build": "npm run validate:tools && astro build",
     "preview": "astro preview",
     "typecheck": "astro check",

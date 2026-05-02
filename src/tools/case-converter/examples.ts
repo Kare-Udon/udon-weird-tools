@@ -6,6 +6,7 @@ export const examples = [
     name: {
       'zh-CN': '组件名',
       en: 'Component name',
+      ja: 'コンポーネント名',
     },
     input: {
       text: 'user profile card',

@@ -8,7 +8,7 @@
 - TypeScript strict mode
 - React islands
 - Cloudflare Pages 静态托管
-- 默认中文，英文作为第二语言
+- 默认英文，支持日语和简体中文
 - 不使用 Pages Functions、不使用后端 API、不保存服务端数据
 
 ## 快速开始
@@ -77,7 +77,7 @@ src/tools/client-registry.ts
 - 不直接写 localStorage / IndexedDB
 - 不使用 `eval` / `new Function`
 - 输出必须可 JSON 序列化
-- UI 文案必须支持中文和英文
+- UI 文案必须支持英文、日语和简体中文
 
 运行校验：
 
@@ -87,7 +87,7 @@ npm run validate:tools
 
 ## 路由
 
-默认中文不加前缀：
+默认英文不加前缀：
 
 ```text
 /
@@ -95,12 +95,20 @@ npm run validate:tools
 /tools/json-cleaner
 ```
 
-英文加前缀：
+日语加前缀：
 
 ```text
-/en
-/en/tools
-/en/tools/json-cleaner
+/ja
+/ja/tools
+/ja/tools/json-cleaner
+```
+
+简体中文加前缀：
+
+```text
+/zh-CN
+/zh-CN/tools
+/zh-CN/tools/json-cleaner
 ```
 
 ## 当前内置工具

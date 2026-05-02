@@ -19,10 +19,12 @@ export const manifest = {
     name: {
       'zh-CN': 'JSON 清洗器',
       en: 'JSON Cleaner',
+      ja: 'JSON クリーナー',
     },
     description: {
       'zh-CN': '整理伪 JSON、日志片段或带尾逗号的 JSON，并输出格式化结果。',
       en: 'Clean pseudo JSON, log snippets, or trailing commas, then format the result.',
+      ja: '疑似 JSON、ログ断片、末尾カンマ付き JSON を整えて整形します。',
     },
   },
 } as const satisfies ToolManifest;

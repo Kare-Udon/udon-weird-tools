@@ -6,6 +6,7 @@ export const examples = [
     name: {
       'zh-CN': '带尾逗号的对象',
       en: 'Object with trailing commas',
+      ja: '末尾カンマ付きオブジェクト',
     },
     input: {
       text: '{ user: "udon", active: true, tags: ["tool", "json",], }',

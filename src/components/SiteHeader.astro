@@ -13,8 +13,14 @@ const { locale, path = '/' } = Astro.props as {
 <header class="site-header">
   <a class="brand" href={pathForLocale(locale, '/')}>{t(locale, 'siteTitle')}</a>
   <nav class="main-nav" aria-label="Main navigation">
-    <a href={pathForLocale(locale, '/')}>{t(locale, 'navHome')}</a>
-    <a href={pathForLocale(locale, '/tools')}>{t(locale, 'navTools')}</a>
+    <a href={pathForLocale(locale, '/')}>{t(locale, 'navTools')}</a>
+    <a href={pathForLocale(locale, '/logs')}>{t(locale, 'navLogs')}</a>
+    <a href={pathForLocale(locale, '/about')}>{t(locale, 'navAbout')}</a>
   </nav>
-  <LanguageSwitcher locale={locale} path={path} />
+  <div class="header-actions">
+    <LanguageSwitcher locale={locale} path={path} />
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label={t(locale, 'themeToggle')}>
+      <span class="theme-toggle-mark" aria-hidden="true"></span>
+    </button>
+  </div>
 </header>

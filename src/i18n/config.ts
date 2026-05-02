@@ -1,12 +1,13 @@
-export const defaultLocale = 'zh-CN' as const;
+export const defaultLocale = 'en' as const;
 
-export const locales = ['zh-CN', 'en'] as const;
+export const locales = ['en', 'ja', 'zh-CN'] as const;
 
 export type Locale = (typeof locales)[number];
 
 export const localeLabels: Record<Locale, string> = {
-  'zh-CN': '简体中文',
   en: 'English',
+  ja: '日本語',
+  'zh-CN': '简体中文',
 };
 
 export const prefixedLocales = locales.filter(
