@@ -3,6 +3,15 @@
     "date": "2026-05-06",
     "items": [
       {
+        "id": "2026-05-06-pending-b930f94928",
+        "commitSubject": "Add VRC photo metadata parser",
+        "summary": {
+          "en": "Added a local VRC photo metadata parser for extracting VRChat PNG XMP details.",
+          "ja": "VRChat PNG の XMP 情報を抽出するローカル VRC 写真メタデータ解析ツールを追加しました。",
+          "zh-CN": "新增本地 VRC 照片信息解析器，可提取 VRChat PNG 的 XMP 详情。"
+        }
+      },
+      {
         "id": "2026-05-06-pending-5506ea8fd7",
         "commitSubject": "feat: add tool directory sorting",
         "summary": {

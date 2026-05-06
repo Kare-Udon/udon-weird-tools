@@ -263,7 +263,7 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
         {!autoPreview && (
           <div className="section-heading">
             <h2>{t(locale, 'toolInput')}</h2>
-            <p>{t(locale, 'toolLocalOnly')}</p>
+            {!hasFileInput && <p>{t(locale, 'toolLocalOnly')}</p>}
           </div>
         )}
 
@@ -305,7 +305,7 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
             {!autoPreview && (
               <div>
                 <h2>{t(locale, 'toolOutput')}</h2>
-                <p>{shouldSaveRecent ? t(locale, 'toolRecentSaved') : t(locale, 'toolRecentNotSaved')}</p>
+                {!hasFileInput && <p>{shouldSaveRecent ? t(locale, 'toolRecentSaved') : t(locale, 'toolRecentNotSaved')}</p>}
               </div>
             )}
             {resultText && (
