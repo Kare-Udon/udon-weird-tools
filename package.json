@@ -6,9 +6,10 @@
   "description": "A static-first, i18n-ready Astro + TypeScript + React starter for browser-only personal tools.",
   "scripts": {
     "dev": "NODE_ENV=development astro dev --force",
-    "build": "npm run validate:tools && astro build",
+    "build": "npm run validate:tools && astro build && node scripts/generate-service-worker.mjs && npm run validate:offline",
     "preview": "astro preview",
     "typecheck": "astro check",
+    "validate:offline": "node scripts/validate-offline.mjs",
     "validate:tools": "node scripts/validate-tools.mjs"
   },
   "dependencies": {

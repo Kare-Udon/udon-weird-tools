@@ -9,6 +9,7 @@
 - React islands
 - Cloudflare Pages 静态托管
 - 默认英文，支持日语和简体中文
+- 首次在线访问后支持同源页面与静态资源离线缓存
 - 不使用 Pages Functions、不使用后端 API、不保存服务端数据
 
 ## 快速开始
@@ -54,9 +55,11 @@ src/
   styles/           全局样式
   tools/            工具插件目录
 scripts/
+  generate-service-worker.mjs
   validate-tools.mjs
 public/
   _headers          Cloudflare Pages 静态响应头
+  service-worker.js 离线缓存源码模板
 ```
 
 ## 新增工具
@@ -93,6 +96,15 @@ src/tools/client-registry.ts
 
 ```bash
 npm run validate:tools
+npm run validate:offline
+```
+
+## 离线能力
+
+构建时会在 `dist/service-worker.js` 中注入当前静态路由和构建资源清单。用户首次在线访问后，同源页面、工具页和 Astro 构建资源会进入浏览器 Cache Storage；之后断网时可继续打开已缓存的工具。
+
+```bash
+npm run build
 ```
 
 ## 路由
@@ -134,5 +146,4 @@ npm run validate:tools
 - IndexedDB 历史记录
 - 完整工作区导入/导出
 - Web Worker 池
-- PWA 离线缓存
 - 本地小模型运行时

@@ -61,17 +61,9 @@ const pageDescription = description ?? t(locale, 'siteDescription');
         });
       });
 
-      if ('serviceWorker' in navigator) {
+      if (import.meta.env.PROD && 'serviceWorker' in navigator) {
         navigator.serviceWorker
-          .getRegistrations()
-          .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
-          .catch(() => {});
-      }
-
-      if ('caches' in window) {
-        window.caches
-          .keys()
-          .then((keys) => Promise.all(keys.map((key) => window.caches.delete(key))))
+          .register('/service-worker.js')
           .catch(() => {});
       }
     </script>
