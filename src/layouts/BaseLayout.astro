@@ -41,6 +41,14 @@ const pageDescription = description ?? t(locale, 'siteDescription');
         root.dataset.theme = 'dark';
       }
 
+      const syncThemeButtons = () => {
+        document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((button) => {
+          button.setAttribute('aria-pressed', String(root.dataset.theme === 'dark'));
+        });
+      };
+
+      syncThemeButtons();
+
       document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
         button.addEventListener('click', () => {
           const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
@@ -52,6 +60,8 @@ const pageDescription = description ?? t(locale, 'siteDescription');
             delete root.dataset.theme;
             window.localStorage.setItem('udon-tools-theme', 'light');
           }
+
+          syncThemeButtons();
         });
       });
 

@@ -19,8 +19,25 @@ const { locale, path = '/' } = Astro.props as {
   </nav>
   <div class="header-actions">
     <LanguageSwitcher locale={locale} path={path} />
-    <button class="theme-toggle" type="button" data-theme-toggle aria-label={t(locale, 'themeToggle')}>
-      <span class="theme-toggle-mark" aria-hidden="true"></span>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label={t(locale, 'themeToggle')} aria-pressed="false">
+      <span class="theme-toggle-track" aria-hidden="true">
+        <span class="theme-toggle-mark">
+          <svg class="theme-toggle-icon theme-toggle-icon--sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="3.25"></circle>
+            <path d="M12 3.75v2.1"></path>
+            <path d="M12 18.15v2.1"></path>
+            <path d="m5.75 5.75 1.48 1.48"></path>
+            <path d="m16.77 16.77 1.48 1.48"></path>
+            <path d="M3.75 12h2.1"></path>
+            <path d="M18.15 12h2.1"></path>
+            <path d="m5.75 18.25 1.48-1.48"></path>
+            <path d="m16.77 7.23 1.48-1.48"></path>
+          </svg>
+          <svg class="theme-toggle-icon theme-toggle-icon--moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 14.25A7.55 7.55 0 0 1 9.75 4a7.85 7.85 0 1 0 10.25 10.25Z"></path>
+          </svg>
+        </span>
+      </span>
     </button>
   </div>
 </header>
