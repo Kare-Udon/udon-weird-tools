@@ -598,24 +598,44 @@ textarea:focus {
   padding: 3.5rem 0 2rem;
 }
 
-.plain-page {
-  max-width: 840px;
+.about-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.35rem;
+  max-width: 540px;
   min-height: 52vh;
-  padding: 4.5rem 0 3rem;
+  margin: 0 auto;
+  padding: clamp(4rem, 10vw, 6.5rem) 0 3rem;
+  text-align: center;
 }
 
-.plain-page h1 {
-  margin: 0 0 0.7rem;
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1.08;
+.about-avatar {
+  width: 6.75rem;
+  height: 6.75rem;
+  border: 1px solid color-mix(in srgb, var(--line-strong) 64%, transparent);
+  border-radius: 999px;
+  background: var(--surface);
 }
 
-.plain-page p {
-  max-width: 640px;
+.about-copy {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: center;
+}
+
+.about-copy h1 {
+  margin: 0 0 0.45rem;
+  font-size: clamp(2.05rem, 4vw, 2.75rem);
+  line-height: 1.05;
+}
+
+.about-copy p {
+  max-width: 34rem;
   margin: 0;
   color: var(--muted-strong);
-  font-size: 1.05rem;
-  line-height: 1.75;
+  font-size: 1rem;
+  line-height: 1.7;
 }
 
 .logs-page {
@@ -1146,6 +1166,26 @@ textarea {
 
   .language-select select {
     max-width: 8.2rem;
+  }
+
+  .about-page {
+    gap: 1rem;
+    min-height: 48vh;
+    padding: 3.25rem 0 2.5rem;
+  }
+
+  .about-avatar {
+    width: 5.6rem;
+    height: 5.6rem;
+  }
+
+  .about-copy {
+    gap: 0.65rem;
+  }
+
+  .about-copy p {
+    font-size: 0.98rem;
+    line-height: 1.65;
   }
 
   .tool-directory {

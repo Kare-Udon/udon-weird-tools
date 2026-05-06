@@ -1,0 +1,27 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { type Locale } from '@/i18n/config';
+import { t } from '@/i18n/ui';
+
+const { locale, path } = Astro.props as {
+  locale: Locale;
+  path: string;
+};
+---
+
+<BaseLayout locale={locale} path={path} title={t(locale, 'aboutTitle')} description={t(locale, 'aboutDescription')}>
+  <section class="about-page" aria-labelledby="about-title">
+    <img
+      class="about-avatar"
+      src="https://blog.udon.eu.org/images/avatar.jpg"
+      alt={t(locale, 'aboutAvatarAlt')}
+      width="112"
+      height="112"
+    />
+    <div class="about-copy">
+      <h1 id="about-title">{t(locale, 'aboutName')}</h1>
+      <p>{t(locale, 'aboutIntro')}</p>
+      <p>{t(locale, 'aboutPrivacy')}</p>
+    </div>
+  </section>
+</BaseLayout>

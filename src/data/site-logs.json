@@ -3,6 +3,15 @@
     "date": "2026-05-06",
     "items": [
       {
+        "id": "2026-05-06-pending-99f8478776",
+        "commitSubject": "Add minimal about page",
+        "summary": {
+          "en": "Added a simple About page with profile details and local-first privacy copy.",
+          "ja": "プロフィール情報とローカル優先のプライバシー説明を含むシンプルな概要ページを追加しました。",
+          "zh-CN": "新增了一个简洁的关于页面，展示个人信息和本地优先的隐私说明。"
+        }
+      },
+      {
         "id": "2026-05-06-8e727d5",
         "commitSubject": "feat: add unitypackage extractor",
         "summary": {
