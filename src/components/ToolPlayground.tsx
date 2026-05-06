@@ -12,7 +12,8 @@ type ToolPlaygroundProps = {
   locale: Locale;
 };
 
-type FormValues = Record<string, string | number | boolean>;
+type FormValue = string | number | boolean | File | null;
+type FormValues = Record<string, FormValue>;
 const FAVORITE_RESULTS_PREFIX = 'weird-tools:favorite-results:';
 
 export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
@@ -27,6 +28,7 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [visibleResultCount, setVisibleResultCount] = useState(12);
   const [favoriteItemIds, setFavoriteItemIds] = useState<string[]>([]);
+  const [resetVersion, setResetVersion] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,6 +70,9 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
   }, [autoPreview, slug]);
 
   const resultText = useMemo(() => (output === null ? '' : stringifyResult(output)), [output]);
+  const hasFileInput = module ? hasFileFields(module.inputFields) : false;
+  const hasSelectedFile = hasFileInput && Object.values(values).some((value) => value instanceof File);
+  const shouldSaveRecent = !hasFileInput;
 
   useEffect(() => {
     if (!autoPreview || !module) return;
@@ -111,6 +116,52 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
     };
   }, [autoPreview, locale, module, values]);
 
+  useEffect(() => {
+    if (!module || !hasFileInput) return;
+
+    if (!hasSelectedFile) {
+      setRunning(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function runFileTool() {
+      if (!module) return;
+
+      setRunning(true);
+      setError(null);
+      setCopied(false);
+      setCopiedItemId(null);
+      setVisibleResultCount(12);
+
+      try {
+        const normalizedValues = normalizeValues(module.inputFields, values);
+        const result = await module.run(normalizedValues, {
+          locale,
+          now: () => new Date(),
+        });
+
+        if (cancelled) return;
+
+        assertSerializable(result);
+        setOutput(result);
+      } catch (runError) {
+        if (cancelled) return;
+        setOutput(null);
+        setError(runError instanceof Error ? runError.message : String(runError));
+      } finally {
+        if (!cancelled) setRunning(false);
+      }
+    }
+
+    void runFileTool();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hasFileInput, hasSelectedFile, locale, module, values]);
+
   async function handleRun() {
     if (!module) return;
 
@@ -129,13 +180,16 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
 
       assertSerializable(result);
       setOutput(result);
-      saveRecentRun({
-        slug,
-        at: new Date().toISOString(),
-        input: normalizedValues,
-        output: result,
-      });
+      if (shouldSaveRecent) {
+        saveRecentRun({
+          slug,
+          at: new Date().toISOString(),
+          input: normalizedValues,
+          output: result,
+        });
+      }
     } catch (runError) {
+      setOutput(null);
       setError(runError instanceof Error ? runError.message : String(runError));
     } finally {
       setRunning(false);
@@ -150,6 +204,7 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
     setCopied(false);
     setCopiedItemId(null);
     setVisibleResultCount(12);
+    setResetVersion((current) => current + 1);
   }
 
   function handleUseExample() {
@@ -219,6 +274,7 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
               field={field}
               locale={locale}
               value={values[field.name]}
+              resetVersion={resetVersion}
               onChange={(value) => setValues((current) => ({ ...current, [field.name]: value }))}
             />
           ))}
@@ -226,9 +282,11 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
 
         {!autoPreview && (
           <div className="button-row">
-            <button type="button" className="primary" onClick={handleRun} disabled={running}>
-              {running ? t(locale, 'toolRunning') : t(locale, 'toolRun')}
-            </button>
+            {!hasFileInput && (
+              <button type="button" className="primary" onClick={handleRun} disabled={running}>
+                {running ? t(locale, 'toolRunning') : t(locale, 'toolRun')}
+              </button>
+            )}
             <button type="button" onClick={handleReset} disabled={running}>
               {t(locale, 'toolReset')}
             </button>
@@ -247,7 +305,7 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
             {!autoPreview && (
               <div>
                 <h2>{t(locale, 'toolOutput')}</h2>
-                <p>{t(locale, 'toolRecentSaved')}</p>
+                <p>{shouldSaveRecent ? t(locale, 'toolRecentSaved') : t(locale, 'toolRecentNotSaved')}</p>
               </div>
             )}
             {resultText && (
@@ -278,7 +336,7 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
             onShowMore={handleShowMore}
           />
         ) : (
-          <div className="empty-result">{t(locale, 'toolNoOutput')}</div>
+          <div className="empty-result">{running ? t(locale, 'toolRunning') : t(locale, 'toolNoOutput')}</div>
         )}
       </section>
     </div>
@@ -315,6 +373,10 @@ function ResultRenderer({
   onCopyItem: (itemId: string, text: string) => void;
   onShowMore: () => void;
 }) {
+  if (isDownloadResult(output)) {
+    return <DownloadResultRenderer output={output} locale={locale} />;
+  }
+
   if (!isCollectionResult(output)) {
     return <pre className="result-box">{stringifyResult(output)}</pre>;
   }
@@ -332,6 +394,110 @@ function ResultRenderer({
       onShowMore={onShowMore}
     />
   );
+}
+
+type DownloadResult = {
+  kind: 'download';
+  fileName: string;
+  mimeType: string;
+  base64: string;
+  size: number;
+  summary: {
+    text: string;
+    entries: Array<{ path: string; size: number }>;
+  };
+  warnings: string[];
+};
+
+function DownloadResultRenderer({ output, locale }: { output: DownloadResult; locale: Locale }) {
+  const [href, setHref] = useState<string>('');
+
+  useEffect(() => {
+    const blob = base64ToBlob(output.base64, output.mimeType);
+    const objectUrl = URL.createObjectURL(blob);
+    setHref(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [output.base64, output.mimeType]);
+
+  return (
+    <div className="download-result">
+      <div className="download-result-summary">
+        <pre>{output.summary.text}</pre>
+        <a className="button primary" href={href} download={output.fileName} aria-disabled={!href}>
+          {t(locale, 'toolDownloadZip')}
+        </a>
+      </div>
+
+      {output.warnings.length > 0 && (
+        <div className="download-warning-list">
+          <strong>{t(locale, 'toolDownloadWarnings')}</strong>
+          <ul>
+            {output.warnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <details className="download-file-list">
+        <summary className="result-collection-summary">
+          {output.summary.entries.length} {t(locale, 'toolDownloadFileCount')}
+        </summary>
+        <div className="download-file-scroll">
+          <div className="result-list">
+            {output.summary.entries.map((entry) => (
+              <article className="result-item" key={entry.path}>
+                <div className="result-item-heading">
+                  <div>
+                    <h3>{entry.path}</h3>
+                    <p>{formatBytes(entry.size)}</p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+function isDownloadResult(value: unknown): value is DownloadResult {
+  return (
+    Boolean(value) &&
+    typeof value === 'object' &&
+    value !== null &&
+    'kind' in value &&
+    (value as { kind: unknown }).kind === 'download' &&
+    'fileName' in value &&
+    typeof (value as { fileName: unknown }).fileName === 'string' &&
+    'mimeType' in value &&
+    typeof (value as { mimeType: unknown }).mimeType === 'string' &&
+    'base64' in value &&
+    typeof (value as { base64: unknown }).base64 === 'string' &&
+    'summary' in value &&
+    Boolean((value as { summary: unknown }).summary)
+  );
+}
+
+function base64ToBlob(base64: string, mimeType: string): Blob {
+  const binary = window.atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return new Blob([bytes], { type: mimeType });
+}
+
+function formatBytes(value: number): string {
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${(value / 1024 / 1024).toFixed(1)} MB`;
 }
 
 function CollectionResultRenderer({
@@ -461,12 +627,14 @@ function FieldRenderer({
   field,
   locale,
   value,
+  resetVersion,
   onChange,
 }: {
   field: ToolField;
   locale: Locale;
   value: FormValues[string] | undefined;
-  onChange: (value: string | number | boolean) => void;
+  resetVersion: number;
+  onChange: (value: FormValue) => void;
 }) {
   const id = `field-${field.name}`;
   const helper = field.helperText?.[locale];
@@ -532,6 +700,17 @@ function FieldRenderer({
         </span>
       )}
 
+      {field.type === 'file' && (
+        <input
+          key={resetVersion}
+          id={id}
+          type="file"
+          required={field.required}
+          accept={field.accept}
+          onChange={(event) => onChange(event.currentTarget.files?.[0] ?? null)}
+        />
+      )}
+
       {helper && <span className="field-help">{helper}</span>}
     </label>
   );
@@ -545,6 +724,7 @@ function getInitialValues(fields: readonly ToolField[]): FormValues {
       }
 
       if (field.type === 'checkbox') return [field.name, false];
+      if (field.type === 'file') return [field.name, null];
       if (field.type === 'number') return [field.name, 0];
       if (field.type === 'select') return [field.name, field.options[0]?.value ?? ''];
       return [field.name, ''];
@@ -565,7 +745,15 @@ function normalizeValues(fields: readonly ToolField[], values: FormValues): Reco
         return [field.name, Boolean(value ?? field.defaultValue ?? false)];
       }
 
+      if (field.type === 'file') {
+        return [field.name, value instanceof File ? value : null];
+      }
+
       return [field.name, value ?? ''];
     }),
   );
+}
+
+function hasFileFields(fields: readonly ToolField[]): boolean {
+  return fields.some((field) => field.type === 'file');
 }

@@ -834,6 +834,63 @@ textarea {
   white-space: pre-wrap;
 }
 
+.download-result {
+  display: grid;
+  min-height: 260px;
+  gap: 0.9rem;
+}
+
+.download-result-summary,
+.download-warning-list {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--surface) 92%, var(--accent-soft));
+}
+
+.download-result-summary {
+  display: grid;
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.download-result-summary pre {
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  line-height: 1.65;
+}
+
+.download-result-summary .button {
+  width: fit-content;
+}
+
+.download-warning-list {
+  border-color: rgba(159, 18, 57, 0.18);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.download-warning-list ul {
+  margin: 0.55rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.download-file-list {
+  min-width: 0;
+}
+
+.download-file-list summary {
+  cursor: pointer;
+  user-select: none;
+}
+
+.download-file-scroll {
+  max-height: 18rem;
+  overflow: auto;
+  padding-right: 0.25rem;
+}
+
 .result-collection {
   min-height: 260px;
 }
