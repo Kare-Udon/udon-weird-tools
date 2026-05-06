@@ -638,14 +638,18 @@ function FieldRenderer({
 }) {
   const id = `field-${field.name}`;
   const helper = field.helperText?.[locale];
+  const helperId = helper ? `${id}-help` : undefined;
+  const showHelper = Boolean(helper && field.type !== 'file');
+  const hideHelper = Boolean(helper && field.type === 'file');
 
   return (
-    <label className="field" htmlFor={id}>
+    <label className="field" htmlFor={id} title={field.type === 'file' ? helper : undefined}>
       <span className="field-label">{localize(field.label, locale)}</span>
 
       {field.type === 'textarea' && (
         <textarea
           id={id}
+          aria-describedby={helperId}
           rows={field.rows ?? 8}
           required={field.required}
           value={String(value ?? '')}
@@ -658,6 +662,7 @@ function FieldRenderer({
         <input
           id={id}
           type="text"
+          aria-describedby={helperId}
           required={field.required}
           value={String(value ?? '')}
           placeholder={field.placeholder?.[locale] ?? ''}
@@ -669,6 +674,7 @@ function FieldRenderer({
         <input
           id={id}
           type="number"
+          aria-describedby={helperId}
           required={field.required}
           value={Number(value ?? field.defaultValue ?? 0)}
           min={field.min}
@@ -679,7 +685,12 @@ function FieldRenderer({
       )}
 
       {field.type === 'select' && (
-        <select id={id} value={String(value ?? field.defaultValue ?? '')} onChange={(event) => onChange(event.currentTarget.value)}>
+        <select
+          id={id}
+          aria-describedby={helperId}
+          value={String(value ?? field.defaultValue ?? '')}
+          onChange={(event) => onChange(event.currentTarget.value)}
+        >
           {field.options.map((option) => (
             <option key={option.value} value={option.value}>
               {localize(option.label, locale)}
@@ -693,6 +704,7 @@ function FieldRenderer({
           <input
             id={id}
             type="checkbox"
+            aria-describedby={helperId}
             checked={Boolean(value ?? field.defaultValue ?? false)}
             onChange={(event) => onChange(event.currentTarget.checked)}
           />
@@ -705,13 +717,23 @@ function FieldRenderer({
           key={resetVersion}
           id={id}
           type="file"
+          aria-describedby={helperId}
           required={field.required}
           accept={field.accept}
           onChange={(event) => onChange(event.currentTarget.files?.[0] ?? null)}
         />
       )}
 
-      {helper && <span className="field-help">{helper}</span>}
+      {showHelper && (
+        <span id={helperId} className="field-help">
+          {helper}
+        </span>
+      )}
+      {hideHelper && (
+        <span id={helperId} className="sr-only">
+          {helper}
+        </span>
+      )}
     </label>
   );
 }

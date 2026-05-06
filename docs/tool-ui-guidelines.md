@@ -5,6 +5,7 @@ Use this file before adding a tool, changing a tool schema, or editing the tool 
 ## Tone
 
 - Keep the site text-first, light blue, and low decoration.
+- Keep visible explanatory copy sparse. If context is useful but not necessary to operate the tool, hide it behind hover text, a tooltip, or another quiet help affordance.
 - Do not add marketing heroes, large illustrations, gradients, or heavy shadows.
 - Treat each tool page as a workbench: input, actions, and output should be clear.
 - Desktop can use two panels. Mobile must be single column with safe side padding.
@@ -28,6 +29,7 @@ Reuse the shared layout unless the tool truly needs custom interaction.
 - Checkbox rows should be `control + label`, with stable alignment and touch area.
 - Keep vertical spacing between checkbox or radio rows.
 - Long placeholders must not break mobile layout.
+- File-upload helper text should not be a visible paragraph by default; prefer hover/help affordances for limits, privacy notes, and edge-case details.
 
 ## Actions
 
