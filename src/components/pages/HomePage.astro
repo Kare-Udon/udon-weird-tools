@@ -4,7 +4,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { type Locale } from '@/i18n/config';
 import { t } from '@/i18n/ui';
 import { localize, pathForLocale } from '@/i18n/utils';
-import { getCategoryLabel, tools } from '@/tools/registry';
+import { categoryOrder, getCategoryLabel, tools } from '@/tools/registry';
 
 const { locale } = Astro.props as { locale: Locale };
 
@@ -14,6 +14,8 @@ const directoryTools = tools.map((tool) => ({
   name: localize(tool.i18n.name, locale),
   description: localize(tool.i18n.description, locale),
   category: getCategoryLabel(tool.category, locale),
+  categoryRank: categoryOrder.indexOf(tool.category),
+  status: tool.status,
   tags: tool.tags,
 }));
 
@@ -28,6 +30,11 @@ const labels = {
   nameColumn: t(locale, 'toolNameColumn'),
   categoryColumn: t(locale, 'toolCategoryColumn'),
   tagsColumn: t(locale, 'toolTagsColumn'),
+  sortLabel: t(locale, 'toolSortLabel'),
+  sortNameAsc: t(locale, 'toolSortNameAsc'),
+  sortNameDesc: t(locale, 'toolSortNameDesc'),
+  sortCategory: t(locale, 'toolSortCategory'),
+  sortStatus: t(locale, 'toolSortStatus'),
 };
 ---
 

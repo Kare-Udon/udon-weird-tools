@@ -1,12 +1,16 @@
 import { useMemo, useState } from 'react';
 import type { Locale } from '@/i18n/config';
 
+type ToolDirectoryStatus = 'stable' | 'experimental';
+
 type ToolDirectoryItem = {
   slug: string;
   href: string;
   name: string;
   description: string;
   category: string;
+  categoryRank: number;
+  status: ToolDirectoryStatus;
   tags: string[];
 };
 
@@ -21,9 +25,15 @@ type ToolDirectoryLabels = {
   nameColumn: string;
   categoryColumn: string;
   tagsColumn: string;
+  sortLabel: string;
+  sortNameAsc: string;
+  sortNameDesc: string;
+  sortCategory: string;
+  sortStatus: string;
 };
 
 type ViewMode = 'list' | 'card' | 'compact';
+type SortMode = 'name-asc' | 'name-desc' | 'category' | 'status';
 
 type ToolDirectoryProps = {
   locale: Locale;
@@ -35,6 +45,13 @@ const viewModes: Array<{ id: ViewMode; labelKey: keyof ToolDirectoryLabels }> = 
   { id: 'list', labelKey: 'listView' },
   { id: 'card', labelKey: 'cardView' },
   { id: 'compact', labelKey: 'compactView' },
+];
+
+const sortModes: Array<{ id: SortMode; labelKey: keyof ToolDirectoryLabels }> = [
+  { id: 'name-asc', labelKey: 'sortNameAsc' },
+  { id: 'name-desc', labelKey: 'sortNameDesc' },
+  { id: 'category', labelKey: 'sortCategory' },
+  { id: 'status', labelKey: 'sortStatus' },
 ];
 
 function SearchIcon() {
@@ -62,14 +79,58 @@ function matchesSearch(tool: ToolDirectoryItem, query: string): boolean {
   return haystack.includes(query);
 }
 
-export default function ToolDirectory({ tools, labels }: ToolDirectoryProps) {
+function compareByName(a: ToolDirectoryItem, b: ToolDirectoryItem, collator: Intl.Collator): number {
+  const nameComparison = collator.compare(a.name, b.name);
+  if (nameComparison !== 0) return nameComparison;
+
+  return collator.compare(a.slug, b.slug);
+}
+
+function compareByStatus(a: ToolDirectoryItem, b: ToolDirectoryItem): number {
+  const statusRank: Record<ToolDirectoryStatus, number> = {
+    stable: 0,
+    experimental: 1,
+  };
+
+  return statusRank[a.status] - statusRank[b.status];
+}
+
+function sortTools(tools: ToolDirectoryItem[], sortMode: SortMode, locale: Locale): ToolDirectoryItem[] {
+  const collator = new Intl.Collator(locale, {
+    numeric: true,
+    sensitivity: 'base',
+  });
+
+  return [...tools].sort((a, b) => {
+    if (sortMode === 'name-desc') {
+      return compareByName(b, a, collator);
+    }
+
+    if (sortMode === 'category') {
+      const categoryComparison = a.categoryRank - b.categoryRank;
+      if (categoryComparison !== 0) return categoryComparison;
+      return compareByName(a, b, collator);
+    }
+
+    if (sortMode === 'status') {
+      const statusComparison = compareByStatus(a, b);
+      if (statusComparison !== 0) return statusComparison;
+      return compareByName(a, b, collator);
+    }
+
+    return compareByName(a, b, collator);
+  });
+}
+
+export default function ToolDirectory({ locale, tools, labels }: ToolDirectoryProps) {
   const [view, setView] = useState<ViewMode>('list');
+  const [sort, setSort] = useState<SortMode>('name-asc');
   const [query, setQuery] = useState('');
 
   const normalizedQuery = query.trim().toLowerCase();
   const filteredTools = useMemo(
-    () => tools.filter((tool) => matchesSearch(tool, normalizedQuery)),
-    [normalizedQuery, tools],
+    () => sortTools(tools.filter((tool) => matchesSearch(tool, normalizedQuery)), sort, locale),
+    [locale, normalizedQuery, sort, tools],
   );
 
   const countText = `${filteredTools.length} ${labels.countSuffix}`;
@@ -93,22 +154,27 @@ export default function ToolDirectory({ tools, labels }: ToolDirectoryProps) {
           />
         </label>
 
-        <div className="directory-toolbar" aria-label={labels.viewLabel}>
-          <span>{labels.viewLabel}</span>
-          <div className="view-switcher">
-            {viewModes.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={view === item.id ? 'active' : undefined}
-                onClick={() => setView(item.id)}
-                aria-pressed={view === item.id}
-              >
+        <label className="directory-control-field">
+          <span>{labels.sortLabel}</span>
+          <select value={sort} onChange={(event) => setSort(event.currentTarget.value as SortMode)}>
+            {sortModes.map((item) => (
+              <option key={item.id} value={item.id}>
                 {labels[item.labelKey]}
-              </button>
+              </option>
             ))}
-          </div>
-        </div>
+          </select>
+        </label>
+
+        <label className="directory-control-field">
+          <span>{labels.viewLabel}</span>
+          <select value={view} onChange={(event) => setView(event.currentTarget.value as ViewMode)}>
+            {viewModes.map((item) => (
+              <option key={item.id} value={item.id}>
+                {labels[item.labelKey]}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <span className="directory-count">{countText}</span>
       </div>

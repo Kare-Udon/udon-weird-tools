@@ -3,6 +3,15 @@
     "date": "2026-05-06",
     "items": [
       {
+        "id": "2026-05-06-pending-5506ea8fd7",
+        "commitSubject": "feat: add tool directory sorting",
+        "summary": {
+          "en": "The tool directory now lets you sort tools by name, category, or status.",
+          "ja": "ツール一覧を名前、カテゴリ、状態で並び替えられるようになりました。",
+          "zh-CN": "工具目录现在支持按名称、类别或状态排序。"
+        }
+      },
+      {
         "id": "2026-05-06-pending-99f8478776",
         "commitSubject": "Add minimal about page",
         "summary": {
