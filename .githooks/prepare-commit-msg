@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+message_file="$1"
+source="${2:-}"
+
+case "$source" in
+  merge|squash|commit)
+    exit 0
+    ;;
+esac
+
+if [ "${UDON_SITE_LOG_HOOK:-1}" = "0" ]; then
+  exit 0
+fi
+
+node scripts/update-site-logs.mjs --staged --commit-message-file "$message_file" --llm
+git add src/data/site-logs.json

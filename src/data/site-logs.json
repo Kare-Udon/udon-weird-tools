@@ -1,0 +1,82 @@
+[
+  {
+    "date": "2026-05-06",
+    "items": [
+      {
+        "id": "2026-05-06-pending-generated-site-logs",
+        "commitSubject": "feat: add generated site logs",
+        "summary": {
+          "en": "Added a generated, multilingual site log timeline backed by commit summaries.",
+          "ja": "コミット要約をもとにした、多言語対応のサイトログタイムラインを追加しました。",
+          "zh-CN": "新增基于提交摘要生成的三语网站日志时间线。"
+        }
+      },
+      {
+        "id": "2026-05-06-e3cee69",
+        "summary": {
+          "en": "Improved the theme toggle interaction and visual feedback.",
+          "ja": "テーマ切り替えの操作感と視覚フィードバックを改善しました。",
+          "zh-CN": "改进主题切换的交互和视觉反馈。"
+        }
+      },
+      {
+        "id": "2026-05-06-83c267e",
+        "summary": {
+          "en": "Added offline cache support so the static toolbox can keep working after assets are cached.",
+          "ja": "静的ツールボックスがアセットのキャッシュ後も動作できるよう、オフラインキャッシュ対応を追加しました。",
+          "zh-CN": "新增离线缓存支持，让静态工具箱在资源缓存后也能继续使用。"
+        }
+      }
+    ]
+  },
+  {
+    "date": "2026-05-02",
+    "items": [
+      {
+        "id": "2026-05-02-7964ec6",
+        "summary": {
+          "en": "Cleared stale service worker caches to avoid serving outdated assets.",
+          "ja": "古いアセット配信を避けるため、残留した Service Worker キャッシュを整理しました。",
+          "zh-CN": "清理过期的 Service Worker 缓存，避免继续提供旧资源。"
+        }
+      },
+      {
+        "id": "2026-05-02-1919957",
+        "summary": {
+          "en": "Documented the Cloudflare Pages deployment workflow.",
+          "ja": "Cloudflare Pages のデプロイ手順をドキュメント化しました。",
+          "zh-CN": "补充 Cloudflare Pages 部署流程文档。"
+        }
+      },
+      {
+        "id": "2026-05-02-0d51871",
+        "summary": {
+          "en": "Added the Unicode fancy text tool.",
+          "ja": "Unicode 装飾テキストツールを追加しました。",
+          "zh-CN": "新增 Unicode 花式文本工具。"
+        }
+      },
+      {
+        "id": "2026-05-02-dbddad5",
+        "summary": {
+          "en": "Initialized the toolbox site structure.",
+          "ja": "ツールボックスサイトの基本構成を初期化しました。",
+          "zh-CN": "初始化工具箱网站结构。"
+        }
+      }
+    ]
+  },
+  {
+    "date": "2026-05-01",
+    "items": [
+      {
+        "id": "2026-05-01-8c5c9fb",
+        "summary": {
+          "en": "Created the initial project commit.",
+          "ja": "プロジェクトの初期コミットを作成しました。",
+          "zh-CN": "创建项目初始提交。"
+        }
+      }
+    ]
+  }
+]

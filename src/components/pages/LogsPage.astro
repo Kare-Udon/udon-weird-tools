@@ -1,0 +1,41 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import siteLogs from '@/data/site-logs.json';
+import { type Locale } from '@/i18n/config';
+import { t } from '@/i18n/ui';
+
+const { locale, path } = Astro.props as {
+  locale: Locale;
+  path: string;
+};
+
+const dateFormatter = new Intl.DateTimeFormat(locale, {
+  dateStyle: 'long',
+});
+---
+
+<BaseLayout locale={locale} path={path} title={t(locale, 'logsTitle')} description={t(locale, 'logsDescription')}>
+  <section class="logs-page">
+    <div class="logs-heading">
+      <h1>{t(locale, 'logsTitle')}</h1>
+      <p>{t(locale, 'logsDescription')}</p>
+    </div>
+
+    <ol class="log-timeline" aria-label={t(locale, 'logsTimelineLabel')}>
+      {
+        siteLogs.map((day) => (
+          <li class="log-day">
+            <time class="log-date" datetime={day.date}>
+              {dateFormatter.format(new Date(`${day.date}T00:00:00+08:00`))}
+            </time>
+            <ul class="log-items">
+              {day.items.map((item) => (
+                <li class="log-item">{item.summary[locale]}</li>
+              ))}
+            </ul>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+</BaseLayout>
