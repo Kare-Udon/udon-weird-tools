@@ -33,6 +33,7 @@ Reuse the shared layout unless the tool truly needs custom interaction.
 
 - Keep clear spacing between fields and the action row.
 - Use one primary button, usually `Run`.
+- For file-upload tools, auto-run immediately after a file is selected and do not show a separate `Run` button.
 - Keep secondary buttons visually quieter.
 - Mobile buttons may wrap, but text must not overflow or distort button height.
 - Long example labels should wrap naturally or take more width.

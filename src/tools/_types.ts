@@ -6,7 +6,7 @@ export type ToolCategory = 'text' | 'data' | 'date' | 'dev';
 
 export type ToolStatus = 'stable' | 'experimental';
 
-export type ToolResultType = 'text' | 'json' | 'table';
+export type ToolResultType = 'text' | 'json' | 'table' | 'download';
 
 export type ToolExecutionMode = 'sync' | 'worker';
 
@@ -75,12 +75,19 @@ export type CheckboxToolField = ToolFieldBase & {
   defaultValue?: boolean;
 };
 
+export type FileToolField = ToolFieldBase & {
+  type: 'file';
+  accept?: string;
+  maxSizeBytes?: number;
+};
+
 export type ToolField =
   | TextToolField
   | TextareaToolField
   | NumberToolField
   | SelectToolField
-  | CheckboxToolField;
+  | CheckboxToolField
+  | FileToolField;
 
 export type ToolExample<Input extends Record<string, unknown> = Record<string, unknown>> = {
   name: LocalizedText;

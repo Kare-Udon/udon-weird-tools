@@ -3,6 +3,15 @@
     "date": "2026-05-06",
     "items": [
       {
+        "id": "2026-05-06-8e727d5",
+        "commitSubject": "feat: add unitypackage extractor",
+        "summary": {
+          "en": "Added a browser-only Unitypackage extractor that restores Assets paths and downloads the result as a ZIP.",
+          "ja": "Assets パスを復元し ZIP としてダウンロードできる、ブラウザ内実行の Unitypackage 展開ツールを追加しました。",
+          "zh-CN": "新增浏览器端 Unitypackage 解包器，可还原 Assets 路径并下载为 ZIP。"
+        }
+      },
+      {
         "id": "2026-05-06-pending-generated-site-logs",
         "commitSubject": "feat: add generated site logs",
         "summary": {

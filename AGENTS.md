@@ -82,6 +82,8 @@ docs/tool-ui-guidelines.md
 
 Treat that document as the shared UI contract for tool forms, action rows, output states, desktop checks, and mobile checks.
 
+File-upload tools should auto-run after the user selects a file. Do not show a separate Run button for that flow; keep Reset when it is useful.
+
 每个工具必须位于：
 
 ```text

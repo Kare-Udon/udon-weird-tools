@@ -6,8 +6,9 @@ import { manifest as caseConverter } from './case-converter/manifest';
 import { manifest as jsonCleaner } from './json-cleaner/manifest';
 import { manifest as timestampConverter } from './timestamp-converter/manifest';
 import { manifest as unicodeFancyText } from './unicode-fancy-text/manifest';
+import { manifest as unitypackageExtractor } from './unitypackage-extractor/manifest';
 
-export const tools = [jsonCleaner, timestampConverter, caseConverter, unicodeFancyText] as const satisfies readonly ToolManifest[];
+export const tools = [jsonCleaner, timestampConverter, caseConverter, unicodeFancyText, unitypackageExtractor] as const satisfies readonly ToolManifest[];
 
 export type ToolSlug = (typeof tools)[number]['slug'];
 

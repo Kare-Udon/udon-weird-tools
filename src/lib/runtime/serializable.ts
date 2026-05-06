@@ -12,6 +12,11 @@ export function stringifyResult(value: unknown): string {
     return value;
   }
 
+  if (isDownloadResult(value)) {
+    const warningText = value.warnings.length > 0 ? `\n\nWarnings:\n${value.warnings.map((warning) => `- ${warning}`).join('\n')}` : '';
+    return `${value.summary.text}${warningText}`;
+  }
+
   if (value && typeof value === 'object' && 'text' in value && typeof (value as { text: unknown }).text === 'string') {
     return (value as { text: string }).text;
   }
@@ -29,6 +34,25 @@ export function stringifyResult(value: unknown): string {
   }
 
   return JSON.stringify(value, null, 2);
+}
+
+function isDownloadResult(value: unknown): value is {
+  kind: 'download';
+  summary: { text: string };
+  warnings: string[];
+} {
+  return (
+    Boolean(value) &&
+    typeof value === 'object' &&
+    value !== null &&
+    'kind' in value &&
+    (value as { kind: unknown }).kind === 'download' &&
+    'summary' in value &&
+    Boolean((value as { summary: unknown }).summary) &&
+    typeof (value as { summary: { text?: unknown } }).summary.text === 'string' &&
+    'warnings' in value &&
+    Array.isArray((value as { warnings: unknown }).warnings)
+  );
 }
 
 function getDisplayName(value: object): string {
