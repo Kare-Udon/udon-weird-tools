@@ -4,12 +4,13 @@ import type { ToolCategory, ToolManifest } from './_types';
 
 import { manifest as caseConverter } from './case-converter/manifest';
 import { manifest as jsonCleaner } from './json-cleaner/manifest';
+import { manifest as speechToText } from './speech-to-text/manifest';
 import { manifest as timestampConverter } from './timestamp-converter/manifest';
 import { manifest as unicodeFancyText } from './unicode-fancy-text/manifest';
 import { manifest as unitypackageExtractor } from './unitypackage-extractor/manifest';
 import { manifest as vrcPhotoMetadata } from './vrc-photo-metadata/manifest';
 
-export const tools = [jsonCleaner, timestampConverter, caseConverter, unicodeFancyText, vrcPhotoMetadata, unitypackageExtractor] as const satisfies readonly ToolManifest[];
+export const tools = [jsonCleaner, timestampConverter, caseConverter, unicodeFancyText, speechToText, vrcPhotoMetadata, unitypackageExtractor] as const satisfies readonly ToolManifest[];
 
 export type ToolSlug = (typeof tools)[number]['slug'];
 

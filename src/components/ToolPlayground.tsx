@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type Locale } from '@/i18n/config';
 import { t } from '@/i18n/ui';
 import { localize } from '@/i18n/utils';
@@ -15,8 +15,21 @@ type ToolPlaygroundProps = {
 type FormValue = string | number | boolean | File | null;
 type FormValues = Record<string, FormValue>;
 const FAVORITE_RESULTS_PREFIX = 'weird-tools:favorite-results:';
+const SpeechToTextTool = lazy(() => import('./SpeechToTextTool'));
 
 export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
+  if (slug === 'speech-to-text') {
+    return (
+      <Suspense fallback={<div className="panel muted-panel">{t(locale, 'toolLoading')}</div>}>
+        <SpeechToTextTool locale={locale} />
+      </Suspense>
+    );
+  }
+
+  return <DefaultToolPlayground slug={slug} locale={locale} />;
+}
+
+function DefaultToolPlayground({ slug, locale }: ToolPlaygroundProps) {
   const autoPreview = slug === 'unicode-fancy-text';
   const [module, setModule] = useState<ToolModule<any, unknown> | null>(null);
   const [values, setValues] = useState<FormValues>({});

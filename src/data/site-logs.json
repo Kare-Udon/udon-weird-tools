@@ -1,5 +1,19 @@
 [
   {
+    "date": "2026-05-08",
+    "items": [
+      {
+        "id": "2026-05-08-pending-b758122fb3",
+        "commitSubject": "Add browser Moonshine speech-to-text tool",
+        "summary": {
+          "en": "Added a browser-based speech-to-text tool for local audio transcription.",
+          "ja": "ブラウザ上で音声をローカルに文字起こしできる音声認識ツールを追加しました。",
+          "zh-CN": "新增一个浏览器端语音转文字工具，可在本地转写音频。"
+        }
+      }
+    ]
+  },
+  {
     "date": "2026-05-06",
     "items": [
       {

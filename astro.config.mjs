@@ -12,6 +12,13 @@ export default defineConfig({
         '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
     },
+    optimizeDeps: {
+      esbuildOptions: {
+        define: {
+          'process.env.NODE_ENV': '"development"',
+        },
+      },
+    },
     build: {
       target: 'es2022',
     },

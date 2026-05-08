@@ -1080,6 +1080,449 @@ textarea {
   color: var(--muted);
 }
 
+.stt-workbench {
+  display: grid;
+  gap: clamp(1rem, 3vw, 1.35rem);
+}
+
+.stt-panel {
+  min-width: 0;
+}
+
+.stt-audio-heading {
+  position: relative;
+  align-items: center;
+}
+
+.stt-model-menu {
+  position: relative;
+  flex: 0 1 auto;
+}
+
+.stt-model-menu > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.35rem;
+  gap: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: color-mix(in srgb, var(--surface) 90%, var(--accent-soft));
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+}
+
+.stt-model-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.stt-model-menu > summary span {
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stt-model-menu > summary strong {
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.stt-model-menu-panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  display: grid;
+  width: min(22rem, calc(100vw - 2rem));
+  gap: 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.85rem;
+  background: var(--surface);
+  box-shadow: 0 1rem 2rem color-mix(in srgb, #000 14%, transparent);
+}
+
+.stt-model-detail-row {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+}
+
+.stt-model-detail-row:nth-of-type(3) {
+  border-bottom: 0;
+}
+
+.stt-model-detail-row span,
+.stt-model-detail-row small,
+.stt-run-row span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.stt-model-detail-row > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+.stt-model-detail-row strong {
+  overflow-wrap: anywhere;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.stt-model-detail-row small,
+.stt-run-row span {
+  overflow-wrap: anywhere;
+}
+
+.stt-progress {
+  height: 0.45rem;
+  margin-top: 1rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+.stt-progress div {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: inline-size 180ms ease;
+}
+
+.stt-model-loading,
+.stt-processing {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.stt-model-loading .stt-progress,
+.stt-processing .stt-progress {
+  margin-top: 0;
+}
+
+.stt-processing-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.stt-processing-meta strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.stt-model-actions,
+.stt-run-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.stt-model-actions {
+  margin-top: 0.7rem;
+}
+
+.stt-global-controls {
+  display: grid;
+  margin-bottom: 0.8rem;
+}
+
+.stt-language-field {
+  display: grid;
+  grid-template-columns: auto minmax(10rem, 13rem);
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+  border-radius: 8px;
+  padding: 0.42rem 0.5rem 0.42rem 0.7rem;
+  background: color-mix(in srgb, var(--surface) 94%, var(--accent-soft));
+}
+
+.stt-language-field span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.stt-language-field select {
+  min-height: 2.25rem;
+  padding-block: 0.35rem;
+}
+
+.stt-source-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  align-items: stretch;
+}
+
+.stt-source-card {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+  border-radius: 8px;
+  padding: 0.78rem;
+  background: color-mix(in srgb, var(--surface) 90%, var(--accent-soft));
+}
+
+.stt-source-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+  margin-bottom: 0.6rem;
+}
+
+.stt-source-title strong {
+  font-size: 0.98rem;
+  line-height: 1.2;
+}
+
+.stt-source-title span,
+.stt-source-status {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.stt-source-title span {
+  text-align: end;
+}
+
+.stt-recorder {
+  display: grid;
+  align-content: start;
+  gap: 0;
+}
+
+.stt-recorder--recording {
+  border-color: color-mix(in srgb, var(--danger) 48%, var(--line));
+  background: color-mix(in srgb, var(--surface) 90%, var(--danger-bg));
+}
+
+.stt-recorder-compact {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.stt-record-button {
+  display: grid;
+  place-items: center;
+  inline-size: 3.3rem;
+  block-size: 3.3rem;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+  border-radius: 50%;
+  padding: 0;
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 0.8rem 1.6rem color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.stt-record-button span {
+  inline-size: 1.05rem;
+  block-size: 1.05rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.stt-recorder--recording .stt-record-button {
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--line));
+  background: var(--danger);
+  box-shadow: 0 0.8rem 1.6rem color-mix(in srgb, var(--danger) 22%, transparent);
+}
+
+.stt-recorder--recording .stt-record-button span {
+  inline-size: 0.95rem;
+  block-size: 0.95rem;
+  border-radius: 4px;
+}
+
+.stt-recorder-body {
+  display: grid;
+  min-width: 0;
+  gap: 0.38rem;
+}
+
+.stt-waveform {
+  display: grid;
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  align-items: center;
+  gap: 0.18rem;
+  block-size: 1.85rem;
+  overflow: hidden;
+}
+
+.stt-waveform span {
+  inline-size: 100%;
+  min-block-size: 0.35rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 68%, var(--line));
+  opacity: 0.72;
+}
+
+.stt-recorder--recording .stt-waveform span {
+  background: color-mix(in srgb, var(--danger) 72%, var(--line));
+  animation: stt-wave-pulse 820ms ease-in-out infinite alternate;
+  animation-delay: calc(var(--wave-index, 0) * 40ms);
+}
+
+.stt-recorder--recording .stt-waveform span:nth-child(3n) {
+  animation-delay: 120ms;
+}
+
+.stt-recorder--recording .stt-waveform span:nth-child(4n) {
+  animation-delay: 240ms;
+}
+
+@keyframes stt-wave-pulse {
+  from {
+    transform: scaleY(0.58);
+  }
+  to {
+    transform: scaleY(1.08);
+  }
+}
+
+.stt-upload-control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.stt-file-input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.stt-upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.9rem;
+  border-color: color-mix(in srgb, var(--accent) 26%, var(--line));
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 800;
+}
+
+.stt-upload-button:hover:not(:disabled),
+.stt-upload-button:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line));
+  background: color-mix(in srgb, var(--surface) 86%, var(--accent-soft));
+}
+
+.stt-upload-icon {
+  position: relative;
+  display: inline-block;
+  inline-size: 0.9rem;
+  block-size: 0.9rem;
+  border: 2px solid currentColor;
+  border-top: 0;
+  border-radius: 0 0 3px 3px;
+}
+
+.stt-upload-icon::before,
+.stt-upload-icon::after {
+  position: absolute;
+  content: "";
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.stt-upload-icon::before {
+  top: -0.45rem;
+  inline-size: 2px;
+  block-size: 0.72rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.stt-upload-icon::after {
+  top: -0.45rem;
+  inline-size: 0.45rem;
+  block-size: 0.45rem;
+  border-top: 2px solid currentColor;
+  border-left: 2px solid currentColor;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.stt-output-panel .empty-result {
+  min-height: 220px;
+}
+
+.stt-transcript {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.stt-transcript > pre {
+  min-height: 180px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow: auto;
+  background: #0f172a;
+  color: #e5edf7;
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+
+.stt-chunks {
+  display: grid;
+  max-height: 20rem;
+  overflow: auto;
+  gap: 0.55rem;
+  padding-right: 0.25rem;
+}
+
+.stt-chunk {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+  background: var(--surface);
+}
+
+.stt-chunk span {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.86rem;
+}
+
+.stt-chunk p {
+  margin: 0;
+  line-height: 1.6;
+}
+
 .error-panel {
   min-height: auto;
   margin-bottom: 1rem;
@@ -1249,6 +1692,58 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .stt-source-grid,
+  .stt-chunk {
+    grid-template-columns: 1fr;
+  }
+
+  .stt-language-field {
+    grid-template-columns: 1fr;
+  }
+
+  .stt-audio-heading {
+    display: grid;
+    align-items: stretch;
+  }
+
+  .stt-model-menu,
+  .stt-model-menu > summary {
+    width: 100%;
+  }
+
+  .stt-model-menu > summary {
+    justify-content: space-between;
+  }
+
+  .stt-model-menu > summary span {
+    max-width: none;
+  }
+
+  .stt-model-menu-panel {
+    position: static;
+    width: 100%;
+    margin-top: 0.5rem;
+    box-shadow: none;
+  }
+
+  .stt-model-detail-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .stt-source-title {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .stt-source-title span {
+    text-align: start;
+  }
+
+  .stt-recorder-compact {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
   .panel .button-row {
     align-items: stretch;
     gap: 0.6rem;
@@ -1259,7 +1754,7 @@ textarea {
     min-width: fit-content;
   }
 
-  .section-heading,
+  .section-heading:not(.stt-audio-heading),
   .output-heading {
     display: block;
   }
