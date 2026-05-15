@@ -3,57 +3,30 @@
     "date": "2026-05-15",
     "items": [
       {
-        "id": "2026-05-15-pending-193420293f",
-        "commitSubject": "Fix STT preferences and clipboard fallback",
+        "id": "2026-05-15-pending-e8584253b7",
+        "commitSubject": "Consolidate STT site logs",
         "summary": {
-          "en": "Fixed Speech to Text preference loading and made copy-to-clipboard more reliable when browser clipboard access fails or stalls.",
-          "ja": "音声文字起こしの設定読み込みを修正し、ブラウザーのクリップボード操作が失敗または停止した場合のコピー動作を安定させました。",
-          "zh-CN": "修复了语音转文字的偏好设置加载，并提升了浏览器剪贴板访问失败或卡住时的复制可靠性。"
+          "en": "Consolidated the STT site log entries for a cleaner changelog.",
+          "ja": "STTのサイトログ項目を統合し、変更履歴を見やすくしました。",
+          "zh-CN": "合并了 STT 站点日志条目，让更新记录更清晰。"
         }
       },
       {
-        "id": "2026-05-15-pending-9e575d3f3d",
-        "commitSubject": "Unify STT model loading progress",
+        "id": "2026-05-15-stt-timeline-workflow",
+        "commitSubject": "Add STT timeline workflow",
         "summary": {
-          "en": "Speech-to-text now shows one unified loading progress state while speech and timeline models prepare.",
-          "ja": "音声文字起こしで、音声モデルとタイムラインモデルの準備中に統一された読み込み進捗を表示するようになりました。",
-          "zh-CN": "语音转文字现在会在语音和时间轴模型准备时显示统一的加载进度状态。"
+          "en": "Speech to Text now supports local audio upload or recording, multilingual Moonshine transcription, optional Vosk sentence timing, and an editable transcript timeline.",
+          "ja": "音声文字起こしで、ローカル音声のアップロードまたは録音、多言語 Moonshine 文字起こし、任意の Vosk 文単位タイミング、編集可能なタイムラインに対応しました。",
+          "zh-CN": "语音转文字现在支持本地音频上传或录音、多语言 Moonshine 转写、可选 Vosk 句子级时间轴，以及可编辑的转写时间线。"
         }
       },
       {
-        "id": "2026-05-15-pending-e310855703",
-        "commitSubject": "Fix Japanese timeline alignment",
+        "id": "2026-05-15-stt-polish",
+        "commitSubject": "Polish STT model state and editing",
         "summary": {
-          "en": "Improved timeline alignment for Japanese speech-to-text results.",
-          "ja": "日本語の音声文字起こし結果のタイムライン位置合わせを改善しました。",
-          "zh-CN": "改进了日语语音转文字结果的时间线对齐。"
-        }
-      },
-      {
-        "id": "2026-05-15-pending-aec45d868d",
-        "commitSubject": "Remember STT preferences",
-        "summary": {
-          "en": "Speech-to-text now remembers your selected language and timeline setting between visits.",
-          "ja": "音声文字起こしで、選択した言語とタイムライン設定が次回以降も保持されるようになりました。",
-          "zh-CN": "语音转文字现在会在下次访问时保留你选择的语言和时间线设置。"
-        }
-      },
-      {
-        "id": "2026-05-15-pending-e1a5b74d55",
-        "commitSubject": "Defer timeline transcript display",
-        "summary": {
-          "en": "Speech-to-text results now wait to appear until the timeline transcript is ready.",
-          "ja": "音声文字起こし結果は、タイムライン付き文字起こしの準備ができてから表示されるようになりました。",
-          "zh-CN": "语音转文字结果现在会等时间轴转写准备好后再显示。"
-        }
-      },
-      {
-        "id": "2026-05-15-pending-f84256a362",
-        "commitSubject": "Add STT timeline and source-state UI",
-        "summary": {
-          "en": "Speech-to-text now shows audio source status and can generate a timed transcript timeline.",
-          "ja": "音声文字起こしで音声ソースの状態表示とタイムライン付き文字起こしに対応しました。",
-          "zh-CN": "语音转文字现在会显示音频来源状态，并可生成带时间轴的转写结果。"
+          "en": "Cleaned up Speech to Text model status, unified loading progress, remembered language and timeline preferences, and made copy/export/editing actions more reliable.",
+          "ja": "音声文字起こしのモデル状態表示と読み込み進捗を整理し、言語とタイムライン設定を保持し、コピー・エクスポート・編集操作を安定させました。",
+          "zh-CN": "整理了语音转文字的模型状态和统一加载进度，记住语言与时间轴偏好，并提升复制、导出和编辑操作的可靠性。"
         }
       }
     ]
