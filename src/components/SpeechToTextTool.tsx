@@ -635,8 +635,8 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
         setVoskModelState('loading');
         setProcessingProgress(70);
         setProcessingDetail(sttText(locale, 'initializingTimeline'));
-        const { createModel } = await import('vosk-browser');
-        return createModel(blobUrl, -1);
+        const { createVoskModel } = await import('@/lib/vosk-browser');
+        return createVoskModel(blobUrl, -1);
       })
       .then((loaded) => {
         voskModelRef.current = loaded;
