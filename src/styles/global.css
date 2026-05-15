@@ -1656,6 +1656,10 @@ textarea {
   font-size: 0.82rem;
 }
 
+.stt-selection-summary--plain {
+  padding-inline: 0.65rem;
+}
+
 .stt-wave-timeline {
   position: relative;
   block-size: 4.6rem;
@@ -1749,6 +1753,10 @@ textarea {
   border-radius: 8px;
   padding: 0.55rem;
   background: var(--surface);
+}
+
+.stt-sentence-row--plain {
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .stt-sentence-row--active {
