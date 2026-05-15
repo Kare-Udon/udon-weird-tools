@@ -2,22 +2,31 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { gunzipSync } from 'node:zlib';
 import { normalizeVoskModelArchive } from './vosk-archive.ts';
-import { getVoskTimelineModel, voskTimelineModels } from './vosk.ts';
+import { getVoskModelCachePath, getVoskTimelineModel, isVoskModelCacheUrl, voskTimelineModels } from './vosk.ts';
 
 test('exposes Vosk timeline models for every supported speech language', () => {
   assert.deepEqual(
-    voskTimelineModels.map((option) => [option.language, option.modelUrl ? new URL(option.modelUrl).pathname.split('/').at(-1) : null]),
+    voskTimelineModels.map((option) => [option.language, option.storageModelId, option.modelUrl ? new URL(option.modelUrl).pathname.split('/').at(-1) : null]),
     [
-      ['english', 'vosk-model-small-en-us-0.15.tar.gz'],
-      ['chinese', 'vosk-model-small-cn-0.3.tar.gz'],
-      ['japanese', 'vosk-model-small-ja-0.22.zip'],
-      ['korean', 'vosk-model-small-ko-0.22.zip'],
+      ['english', 'vosk-small-en', 'vosk-model-small-en-us-0.15.tar.gz'],
+      ['chinese', 'vosk-small-zh', 'vosk-model-small-cn-0.3.tar.gz'],
+      ['japanese', 'vosk-small-ja', 'vosk-model-small-ja-0.22.zip'],
+      ['korean', 'vosk-small-ko', 'vosk-model-small-ko-0.22.zip'],
     ],
   );
 });
 
 test('returns the matching Vosk timeline model for a language', () => {
   assert.equal(getVoskTimelineModel('chinese').name, 'Vosk Small ZH');
+});
+
+test('uses the shared tool file cache contract for Vosk timeline archives', () => {
+  const model = getVoskTimelineModel('japanese');
+  const cachePath = getVoskModelCachePath(model);
+
+  assert.equal(cachePath, '/__tool-storage/speech-to-text/models/vosk-small-ja/archive/model.tar.gz');
+  assert.equal(isVoskModelCacheUrl(cachePath, model), true);
+  assert.equal(isVoskModelCacheUrl('/__tool-storage/speech-to-text/models/vosk-small-en/archive/model.tar.gz', model), false);
 });
 
 test('converts official Vosk ZIP layout into vosk-browser tar.gz layout', async () => {

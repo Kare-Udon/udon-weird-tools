@@ -1,10 +1,12 @@
 import type { Locale } from '@/i18n/config';
+import { parseToolFileStoragePath, toolCacheName, toolModelCachePath } from '../../lib/local/storage-contract.ts';
 
 export type SpeechLanguage = 'english' | 'chinese' | 'japanese' | 'korean';
 
 export type SpeechModelOption = {
   language: SpeechLanguage;
   modelId: string;
+  storageModelId: string;
   name: string;
   sizeLabel: string;
   requiredFiles: string[];
@@ -27,10 +29,14 @@ const moonshineRequiredFiles = [
   'onnx/encoder_model_quantized.onnx',
 ];
 
+export const SPEECH_TO_TEXT_TOOL_SLUG = 'speech-to-text';
+export const SPEECH_MODEL_CACHE_NAME = toolCacheName(SPEECH_TO_TEXT_TOOL_SLUG);
+
 export const speechModelOptions: SpeechModelOption[] = [
   {
     language: 'english',
     modelId: 'onnx-community/moonshine-tiny-ONNX',
+    storageModelId: 'moonshine-tiny-en',
     name: 'Moonshine Tiny EN',
     sizeLabel: '< 50 MB',
     requiredFiles: moonshineRequiredFiles,
@@ -43,6 +49,7 @@ export const speechModelOptions: SpeechModelOption[] = [
   {
     language: 'chinese',
     modelId: 'onnx-community/moonshine-base-zh-ONNX',
+    storageModelId: 'moonshine-base-zh',
     name: 'Moonshine Base ZH',
     sizeLabel: '~65 MB',
     requiredFiles: moonshineRequiredFiles,
@@ -55,6 +62,7 @@ export const speechModelOptions: SpeechModelOption[] = [
   {
     language: 'japanese',
     modelId: 'onnx-community/moonshine-base-ja-ONNX',
+    storageModelId: 'moonshine-base-ja',
     name: 'Moonshine Base JA',
     sizeLabel: '~65 MB',
     requiredFiles: moonshineRequiredFiles,
@@ -67,6 +75,7 @@ export const speechModelOptions: SpeechModelOption[] = [
   {
     language: 'korean',
     modelId: 'onnx-community/moonshine-tiny-ko-ONNX',
+    storageModelId: 'moonshine-tiny-ko',
     name: 'Moonshine Tiny KO',
     sizeLabel: '< 50 MB',
     requiredFiles: moonshineRequiredFiles,
@@ -89,7 +98,7 @@ export function getDefaultSpeechLanguage(locale: Locale): SpeechLanguage {
 }
 
 export function getSpeechModelCacheCoverage(urls: string[], model: SpeechModelOption): SpeechModelCacheCoverage {
-  const downloadedFiles = model.requiredFiles.filter((file) => urls.some((url) => isSpeechModelFileUrl(url, model.modelId, file))).length;
+  const downloadedFiles = model.requiredFiles.filter((file) => urls.some((url) => getSpeechModelFileFromCacheUrl(url, model) === file)).length;
 
   if (downloadedFiles === 0) {
     return {
@@ -107,12 +116,28 @@ export function getSpeechModelCacheCoverage(urls: string[], model: SpeechModelOp
 }
 
 export function isSpeechModelCacheUrl(url: string, modelId: string): boolean {
-  return getUrlPath(url).includes(`/${modelId}/resolve/`);
+  const model = speechModelOptions.find((option) => option.modelId === modelId || option.storageModelId === modelId);
+  return Boolean(model && getSpeechModelFileFromCacheUrl(url, model));
 }
 
-function isSpeechModelFileUrl(url: string, modelId: string, file: string): boolean {
-  const path = getUrlPath(url);
-  return path.includes(`/${modelId}/resolve/`) && path.endsWith(`/${file}`);
+export function getSpeechModelFileCachePath(model: SpeechModelOption, relativePath: string): string {
+  return toolModelCachePath(SPEECH_TO_TEXT_TOOL_SLUG, model.storageModelId, relativePath);
+}
+
+export function getSpeechModelFileFromCacheUrl(url: string, model: SpeechModelOption): string | null {
+  const parsed = parseToolFileStoragePath(url);
+  if (!parsed || parsed.toolSlug !== SPEECH_TO_TEXT_TOOL_SLUG || parsed.modelId !== model.storageModelId) return null;
+  return parsed.relativePath || null;
+}
+
+export function getSpeechModelFileFromTransformersRequest(request: string, model: SpeechModelOption): string | null {
+  const path = getUrlPath(request);
+  const remotePrefix = `/${model.modelId}/resolve/main/`;
+  const localPrefix = `/models/${model.modelId}/`;
+
+  if (path.includes(remotePrefix)) return path.slice(path.indexOf(remotePrefix) + remotePrefix.length);
+  if (path.includes(localPrefix)) return path.slice(path.indexOf(localPrefix) + localPrefix.length);
+  return null;
 }
 
 function getUrlPath(url: string): string {

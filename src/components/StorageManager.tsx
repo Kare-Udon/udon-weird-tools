@@ -8,10 +8,11 @@ import {
   inferModelName,
   inferStorageGroup,
   inferStorageToolSlug,
+  isInternalRuntimeDatabaseEntry,
   previewStorageValue,
   stableKeyText,
 } from '@/lib/storage-manager';
-import { parseToolFileStoragePath } from '@/lib/local/storage-contract';
+import { parseToolFileStoragePath, parseToolLocalStorageKey } from '@/lib/local/storage-contract';
 import { storageText } from '@/lib/storage-manager-copy';
 import { tools } from '@/tools/registry';
 
@@ -85,6 +86,7 @@ export default function StorageManager({ locale }: StorageManagerProps) {
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set());
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -143,9 +145,23 @@ export default function StorageManager({ locale }: StorageManagerProps) {
     }
   }
 
+  function toggleStorageGroup(groupId: string) {
+    setExpandedGroups((current) => {
+      const next = new Set(current);
+      if (next.has(groupId)) {
+        next.delete(groupId);
+      } else {
+        next.add(groupId);
+      }
+      return next;
+    });
+  }
+
   const databaseBytes = snapshot?.databaseEntries.reduce((total, entry) => total + entry.size, 0) ?? 0;
   const fileBytes = snapshot?.fileGroups.reduce((total, group) => total + group.size, 0) ?? 0;
-  const storageGroups = useMemo(() => buildToolStorageGroups(snapshot, locale), [locale, snapshot]);
+  const databaseGroups = useMemo(() => buildDatabaseStorageGroups(snapshot, locale), [locale, snapshot]);
+  const fileStorageGroups = useMemo(() => buildFileStorageGroups(snapshot, locale), [locale, snapshot]);
+  const visibleStorageCount = databaseGroups.length + fileStorageGroups.length;
 
   return (
     <div className="storage-manager">
@@ -174,114 +190,205 @@ export default function StorageManager({ locale }: StorageManagerProps) {
         </div>
       </section>
 
-      <section className="panel">
-        <div className="section-heading">
-          <div>
-            <h2>{storageText(locale, 'toolStorage')}</h2>
-            <p>
-              {storageGroups.length} {storageText(locale, 'entries')}
-            </p>
-          </div>
-        </div>
-
+      <section className="panel storage-tool-panel">
         {!snapshot && <div className="empty-result storage-empty">{storageText(locale, 'scanning')}</div>}
 
         {snapshot && !snapshot.databaseSupported && !snapshot.fileStorageSupported && <div className="empty-result storage-empty">{storageText(locale, 'unsupported')}</div>}
 
-        {snapshot && storageGroups.length === 0 && <div className="empty-result storage-empty">{loading ? storageText(locale, 'scanning') : storageText(locale, 'noToolStorage')}</div>}
+        {snapshot && visibleStorageCount === 0 && <div className="empty-result storage-empty">{loading ? storageText(locale, 'scanning') : storageText(locale, 'noToolStorage')}</div>}
 
-        {storageGroups.length > 0 && (
-          <div className="storage-tool-list">
-            {storageGroups.map((group) => (
-              <section className="storage-tool-section" key={group.id}>
-                <div className="storage-tool-heading">
-                  <div>
-                    <h3>{group.label}</h3>
-                    <p>
-                      {group.databaseEntries.length} {storageText(locale, 'data')} · {group.fileGroups.length} {storageText(locale, 'model')}
-                    </p>
-                  </div>
-                  <strong>{formatStorageBytes(group.totalSize)}</strong>
+        {visibleStorageCount > 0 && (
+          <div className="storage-manager-grid">
+            <section className="storage-column">
+              <div className="storage-column-heading">
+                <h3>{storageText(locale, 'databaseEntries')}</h3>
+                <span>{formatStorageBytes(databaseBytes)}</span>
+              </div>
+
+              {databaseGroups.length === 0 ? (
+                <div className="empty-result storage-empty">{storageText(locale, 'noDatabaseEntries')}</div>
+              ) : (
+                <div className="storage-tool-list">
+                  {databaseGroups.map((group) => (
+                    <StorageDatabaseGroup
+                      group={group}
+                      locale={locale}
+                      pendingId={pendingId}
+                      confirmingId={confirmingId}
+                      isExpanded={expandedGroups.has(`database:${group.id}`)}
+                      onToggle={() => toggleStorageGroup(`database:${group.id}`)}
+                      onDelete={(entry) => void handleDeleteEntry(entry)}
+                      key={group.id}
+                    />
+                  ))}
                 </div>
+              )}
+            </section>
 
-                {group.databaseEntries.length > 0 && (
-                  <div className="storage-subsection">
-                    <h4>{storageText(locale, 'databaseEntries')}</h4>
-                    <div className="storage-entry-list">
-                      <div className="storage-entry storage-entry--header">
-                        <span>{storageText(locale, 'item')}</span>
-                        <span>{storageText(locale, 'source')}</span>
-                        <span>{storageText(locale, 'size')}</span>
-                        <span>{storageText(locale, 'action')}</span>
-                      </div>
-                      {group.databaseEntries.map((entry) => (
-                        <article className="storage-entry" key={entry.id}>
-                          <div className="storage-entry-main">
-                            <div className="storage-entry-heading">
-                              <h3>{entry.keyText}</h3>
-                            </div>
-                            <pre>{entry.preview}</pre>
-                          </div>
-                          <span className="storage-entry-source">
-                            {entry.source === 'localStorage' ? storageText(locale, 'localStorage') : storageText(locale, 'indexedDb')} · {entry.databaseName}
-                            {entry.storeName ? ` / ${entry.storeName}` : ''}
-                          </span>
-                          <span className="storage-entry-size">{formatStorageBytes(entry.size)}</span>
-                          <button type="button" onClick={() => void handleDeleteEntry(entry)} disabled={pendingId === entry.id}>
-                            {confirmingId === entry.id ? storageText(locale, 'confirm') : storageText(locale, 'delete')}
-                          </button>
-                        </article>
-                      ))}
-                    </div>
-                  </div>
-                )}
+            <section className="storage-column">
+              <div className="storage-column-heading">
+                <h3>{storageText(locale, 'fileGroups')}</h3>
+                <span>{formatStorageBytes(fileBytes)}</span>
+              </div>
 
-                {group.fileGroups.length > 0 && (
-                  <div className="storage-subsection">
-                    <h4>{storageText(locale, 'fileGroups')}</h4>
-                    <div className="storage-entry-list">
-                      <div className="storage-entry storage-entry--header">
-                        <span>{storageText(locale, 'model')}</span>
-                        <span>{storageText(locale, 'source')}</span>
-                        <span>{storageText(locale, 'size')}</span>
-                        <span>{storageText(locale, 'action')}</span>
-                      </div>
-                      {group.fileGroups.map((fileGroup) => (
-                        <article className="storage-entry" key={fileGroup.id}>
-                          <div className="storage-entry-main">
-                            <div className="storage-entry-heading">
-                              <h3>{fileGroup.modelName}</h3>
-                            </div>
-                            {fileGroup.samplePaths.length > 0 && (
-                              <details className="storage-samples">
-                                <summary>{storageText(locale, 'samplePaths')}</summary>
-                                <ul>
-                                  {fileGroup.samplePaths.map((path) => (
-                                    <li key={path}>{path}</li>
-                                  ))}
-                                </ul>
-                              </details>
-                            )}
-                          </div>
-                          <span className="storage-entry-source">
-                            {fileGroup.source === 'cache' ? storageText(locale, 'cacheStorage') : storageText(locale, 'opfs')} · {fileGroup.count} {storageText(locale, 'files')}
-                          </span>
-                          <span className="storage-entry-size">{fileGroup.size > 0 ? formatStorageBytes(fileGroup.size) : storageText(locale, 'unavailableSize')}</span>
-                          <button type="button" onClick={() => void handleDeleteFileGroup(fileGroup)} disabled={pendingId === fileGroup.id}>
-                            {confirmingId === fileGroup.id ? storageText(locale, 'confirm') : storageText(locale, 'deleteGroup')}
-                          </button>
-                        </article>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </section>
-            ))}
+              {fileStorageGroups.length === 0 ? (
+                <div className="empty-result storage-empty">{storageText(locale, 'noFileGroups')}</div>
+              ) : (
+                <div className="storage-tool-list">
+                  {fileStorageGroups.map((group) => (
+                    <StorageFileGroup
+                      group={group}
+                      locale={locale}
+                      pendingId={pendingId}
+                      confirmingId={confirmingId}
+                      isExpanded={expandedGroups.has(`files:${group.id}`)}
+                      onToggle={() => toggleStorageGroup(`files:${group.id}`)}
+                      onDelete={(fileGroup) => void handleDeleteFileGroup(fileGroup)}
+                      key={group.id}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
         )}
       </section>
 
     </div>
+  );
+}
+
+function StorageDatabaseGroup({
+  group,
+  locale,
+  pendingId,
+  confirmingId,
+  isExpanded,
+  onToggle,
+  onDelete,
+}: {
+  group: ToolStorageGroup;
+  locale: Locale;
+  pendingId: string | null;
+  confirmingId: string | null;
+  isExpanded: boolean;
+  onToggle: () => void;
+  onDelete: (entry: DatabaseEntry) => void;
+}) {
+  return (
+    <section className={`storage-tool-section${isExpanded ? ' is-open' : ''}`}>
+      <button type="button" className="storage-tool-heading" aria-expanded={isExpanded} onClick={onToggle}>
+        <span className="storage-disclosure" aria-hidden="true">
+          ▸
+        </span>
+        <div>
+          <h3>{group.label}</h3>
+          <p>
+            {group.databaseEntries.length} {storageText(locale, 'entries')}
+          </p>
+        </div>
+        <strong>{formatStorageBytes(group.totalSize)}</strong>
+      </button>
+
+      {isExpanded && (
+        <div className="storage-entry-list">
+          <div className="storage-entry storage-entry--compact storage-entry--header">
+            <span>{storageText(locale, 'item')}</span>
+            <span>{storageText(locale, 'size')}</span>
+            <span>{storageText(locale, 'action')}</span>
+          </div>
+          {group.databaseEntries.map((entry) => (
+            <article className="storage-entry storage-entry--compact" key={entry.id}>
+              <div className="storage-entry-main">
+                <div className="storage-entry-heading">
+                  <h3>{getDatabaseEntryLabel(entry, locale)}</h3>
+                </div>
+                <span className="storage-entry-meta">{getDatabaseEntrySource(entry, locale)}</span>
+                <details className="storage-preview">
+                  <summary>{storageText(locale, 'valuePreview')}</summary>
+                  <pre>{entry.preview}</pre>
+                </details>
+              </div>
+              <span className="storage-entry-size">{formatStorageBytes(entry.size)}</span>
+              <button type="button" onClick={() => onDelete(entry)} disabled={pendingId === entry.id}>
+                {confirmingId === entry.id ? storageText(locale, 'confirm') : storageText(locale, 'delete')}
+              </button>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function StorageFileGroup({
+  group,
+  locale,
+  pendingId,
+  confirmingId,
+  isExpanded,
+  onToggle,
+  onDelete,
+}: {
+  group: ToolStorageGroup;
+  locale: Locale;
+  pendingId: string | null;
+  confirmingId: string | null;
+  isExpanded: boolean;
+  onToggle: () => void;
+  onDelete: (fileGroup: FileGroup) => void;
+}) {
+  return (
+    <section className={`storage-tool-section${isExpanded ? ' is-open' : ''}`}>
+      <button type="button" className="storage-tool-heading" aria-expanded={isExpanded} onClick={onToggle}>
+        <span className="storage-disclosure" aria-hidden="true">
+          ▸
+        </span>
+        <div>
+          <h3>{group.label}</h3>
+          <p>
+            {group.fileGroups.length} {storageText(locale, 'model')}
+          </p>
+        </div>
+        <strong>{formatStorageBytes(group.totalSize)}</strong>
+      </button>
+
+      {isExpanded && (
+        <div className="storage-entry-list">
+          <div className="storage-entry storage-entry--compact storage-entry--header">
+            <span>{storageText(locale, 'model')}</span>
+            <span>{storageText(locale, 'size')}</span>
+            <span>{storageText(locale, 'action')}</span>
+          </div>
+          {group.fileGroups.map((fileGroup) => (
+            <article className="storage-entry storage-entry--compact" key={fileGroup.id}>
+              <div className="storage-entry-main">
+                <div className="storage-entry-heading">
+                  <h3>{getFileGroupLabel(fileGroup, locale)}</h3>
+                </div>
+                <span className="storage-entry-meta">
+                  {getFileGroupSource(fileGroup, locale)} · {fileGroup.count} {storageText(locale, 'files')}
+                </span>
+                {fileGroup.samplePaths.length > 0 && (
+                  <details className="storage-samples">
+                    <summary>{storageText(locale, 'samplePaths')}</summary>
+                    <ul>
+                      {fileGroup.samplePaths.map((path) => (
+                        <li key={path}>{path}</li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+              </div>
+              <span className="storage-entry-size">{fileGroup.size > 0 ? formatStorageBytes(fileGroup.size) : storageText(locale, 'unavailableSize')}</span>
+              <button type="button" onClick={() => onDelete(fileGroup)} disabled={pendingId === fileGroup.id}>
+                {confirmingId === fileGroup.id ? storageText(locale, 'confirm') : storageText(locale, 'deleteGroup')}
+              </button>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -294,7 +401,7 @@ function StorageStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function buildToolStorageGroups(snapshot: StorageSnapshot | null, locale: Locale): ToolStorageGroup[] {
+function buildDatabaseStorageGroups(snapshot: StorageSnapshot | null, locale: Locale): ToolStorageGroup[] {
   if (!snapshot) return [];
 
   const groups = new Map<string, ToolStorageGroup>();
@@ -304,6 +411,14 @@ function buildToolStorageGroups(snapshot: StorageSnapshot | null, locale: Locale
     group.databaseEntries.push(entry);
     group.totalSize += entry.size;
   }
+
+  return [...groups.values()].sort((left, right) => right.totalSize - left.totalSize || left.label.localeCompare(right.label));
+}
+
+function buildFileStorageGroups(snapshot: StorageSnapshot | null, locale: Locale): ToolStorageGroup[] {
+  if (!snapshot) return [];
+
+  const groups = new Map<string, ToolStorageGroup>();
 
   for (const fileGroup of snapshot.fileGroups) {
     const group = ensureToolStorageGroup(groups, fileGroup.toolKey, locale);
@@ -336,6 +451,30 @@ function getToolGroupLabel(toolKey: string, locale: Locale): string {
 
   const tool = tools.find((candidate) => candidate.slug === toolKey);
   return tool ? localize(tool.i18n.name, locale) : toolKey;
+}
+
+function getDatabaseEntryLabel(entry: DatabaseEntry, locale: Locale): string {
+  const parsed = typeof entry.key === 'string' ? parseToolLocalStorageKey(entry.key) : null;
+  if (!parsed) return entry.keyText;
+
+  if (parsed.kind === 'settings') {
+    return parsed.entryId;
+  }
+
+  return `${storageText(locale, 'data')}: ${parsed.entryId}`;
+}
+
+function getDatabaseEntrySource(entry: DatabaseEntry, locale: Locale): string {
+  const source = entry.source === 'localStorage' ? storageText(locale, 'localStorage') : storageText(locale, 'indexedDb');
+  return entry.storeName ? `${source} · ${entry.databaseName} / ${entry.storeName}` : `${source} · ${entry.databaseName}`;
+}
+
+function getFileGroupLabel(group: FileGroup, _locale: Locale): string {
+  return group.modelName;
+}
+
+function getFileGroupSource(group: FileGroup, locale: Locale): string {
+  return group.source === 'cache' ? storageText(locale, 'cacheStorage') : storageText(locale, 'opfs');
 }
 
 function inferStorageToolKey(candidates: readonly string[]): string {
@@ -401,7 +540,9 @@ async function collectDatabaseEntries(): Promise<DatabaseEntry[]> {
         for (const key of keys) {
           const value = await requestToPromise<unknown>(store.get(key));
           const keyText = stableKeyText(key);
-          const preview = previewStorageValue(value);
+          if (isInternalRuntimeDatabaseEntry(databaseInfo.name, storeName, keyText)) continue;
+
+          const preview = previewStorageValue(value, 1200);
           const toolKey = inferStorageToolKey([databaseInfo.name, storeName, keyText, preview]);
           entries.push({
             id: `indexedDB:${databaseInfo.name}:${storeName}:${keyText}`,

@@ -6,6 +6,7 @@ import {
   inferModelName,
   inferStorageGroup,
   inferStorageToolSlug,
+  isInternalRuntimeDatabaseEntry,
 } from './storage-manager.ts';
 import {
   parseToolFileStoragePath,
@@ -68,4 +69,18 @@ test('formats storage byte counts with stable units', () => {
   assert.equal(formatStorageBytes(512), '512 B');
   assert.equal(formatStorageBytes(1536), '1.5 KB');
   assert.equal(formatStorageBytes(2 * 1024 * 1024), '2.0 MB');
+});
+
+test('filters vosk-browser internal runtime database entries', () => {
+  assert.equal(isInternalRuntimeDatabaseEntry('vosk', 'FILE_DATA', '/vosk/blob_http___localhost_4321_model/final.mdl'), true);
+  assert.equal(
+    isInternalRuntimeDatabaseEntry(
+      '/vosk',
+      'FILE_DATA',
+      '/vosk/blob_http___localhost_4322_2048e3ad_0166_44ab_907e_e78c9c521eaa/am/final.mdl'
+    ),
+    true
+  );
+  assert.equal(isInternalRuntimeDatabaseEntry('vosk', 'FILE_DATA', '/__tool-storage/speech-to-text/models/vosk-small-zh/archive/model.tar.gz'), false);
+  assert.equal(isInternalRuntimeDatabaseEntry('weird-tools:tool:speech-to-text:data', 'FILE_DATA', '/vosk/blob_http___localhost_4321_model/final.mdl'), false);
 });

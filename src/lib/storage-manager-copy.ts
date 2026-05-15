@@ -37,6 +37,7 @@ const copy = {
     unknownQuota: 'Unknown',
     unavailableSize: 'Size unavailable',
     samplePaths: 'Sample paths',
+    valuePreview: 'Value preview',
   },
   ja: {
     refresh: '更新',
@@ -74,6 +75,7 @@ const copy = {
     unknownQuota: '不明',
     unavailableSize: 'サイズ不明',
     samplePaths: 'パス例',
+    valuePreview: '値のプレビュー',
   },
   'zh-CN': {
     refresh: '刷新',
@@ -111,6 +113,7 @@ const copy = {
     unknownQuota: '未知',
     unavailableSize: '大小不可用',
     samplePaths: '路径样例',
+    valuePreview: '值预览',
   },
 } satisfies Record<Locale, Record<string, string>>;
 

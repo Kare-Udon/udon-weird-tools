@@ -280,3 +280,19 @@ npm run build
 npm run validate:tools
 npm run build
 ```
+
+## 13. Dev Server Hygiene
+
+When the local Astro/Vite server reports a stale dynamic import such as:
+
+```text
+Failed to fetch dynamically imported module: /node_modules/.vite/deps/...
+```
+
+default to a clean dev-server restart before debugging application code:
+
+- Stop old `astro dev` / `vite` processes on the active localhost ports.
+- Keep only one dev server running for the user test port.
+- Restart through the project script, for example `ASTRO_TELEMETRY_DISABLED=1 npm run dev -- --port 4322`; the script already runs Astro with `--force`, which refreshes Vite dependency prebundles.
+- If the browser still shows stale assets after restart, switch to a fresh localhost port and reload the target route.
+- Treat this as a dev-server cache/prebundle issue unless it reproduces after the clean restart.

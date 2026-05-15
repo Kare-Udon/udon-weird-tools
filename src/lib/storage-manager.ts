@@ -2,6 +2,10 @@ import { parseToolFileStoragePath, parseToolIndexedDbName, parseToolLocalStorage
 
 export const FALLBACK_GROUP = 'site-files';
 
+const VOSK_INTERNAL_DATABASE_NAMES = new Set(['vosk', '/vosk']);
+const VOSK_INTERNAL_STORE = 'FILE_DATA';
+const VOSK_INTERNAL_PATH_PREFIX = '/vosk/';
+
 export function inferStorageGroup(rawPath: string): string {
   return inferModelName(rawPath) ?? FALLBACK_GROUP;
 }
@@ -28,6 +32,14 @@ export function inferStorageToolSlug(candidates: readonly string[]): string | nu
 export function inferKnownToolKey(candidates: readonly string[], toolSlugs: readonly string[]): string | null {
   const toolSlug = inferStorageToolSlug(candidates);
   return toolSlug && toolSlugs.includes(toolSlug) ? toolSlug : null;
+}
+
+export function isInternalRuntimeDatabaseEntry(databaseName: string, storeName: string, keyText: string): boolean {
+  return (
+    VOSK_INTERNAL_DATABASE_NAMES.has(databaseName) &&
+    storeName === VOSK_INTERNAL_STORE &&
+    keyText.startsWith(VOSK_INTERNAL_PATH_PREFIX)
+  );
 }
 
 export function formatStorageBytes(value: number): string {

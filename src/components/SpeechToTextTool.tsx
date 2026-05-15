@@ -1,12 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Locale } from '@/i18n/config';
-import { getDefaultSpeechLanguage, getSpeechModel, getSpeechModelCacheCoverage, isSpeechModelCacheUrl, speechModelOptions } from '@/tools/speech-to-text/models';
-import type { SpeechLanguage } from '@/tools/speech-to-text/models';
+import { toolLocalStorageKey } from '@/lib/local/storage-contract';
+import {
+  SPEECH_MODEL_CACHE_NAME,
+  SPEECH_TO_TEXT_TOOL_SLUG,
+  getDefaultSpeechLanguage,
+  getSpeechModel,
+  getSpeechModelCacheCoverage,
+  getSpeechModelFileCachePath,
+  getSpeechModelFileFromTransformersRequest,
+  isSpeechModelCacheUrl,
+  speechModelOptions,
+} from '@/tools/speech-to-text/models';
+import type { SpeechLanguage, SpeechModelOption } from '@/tools/speech-to-text/models';
 import { bindProcessorTokenizer } from '@/tools/speech-to-text/runtime';
 import { copyTextToClipboard } from '@/tools/speech-to-text/clipboard';
 import { sttText } from '@/tools/speech-to-text/ui';
 import { normalizeVoskModelArchive } from '@/tools/speech-to-text/vosk-archive';
-import { getVoskTimelineModel } from '@/tools/speech-to-text/vosk';
+import { getVoskModelCachePath, getVoskTimelineModel, isVoskModelCacheUrl } from '@/tools/speech-to-text/vosk';
 import type { VoskTimelineModel } from '@/tools/speech-to-text/vosk';
 import type { Model as VoskModel } from 'vosk-browser';
 
@@ -98,10 +109,12 @@ type Transcriber = {
   dispose?: () => void | Promise<void>;
 };
 
-const CACHE_KEY = 'transformers-cache';
-const VOSK_CACHE_KEY = 'vosk-model-cache';
-const LANGUAGE_STORAGE_KEY = 'udon-tools-stt-language';
-const TIMELINE_STORAGE_KEY = 'udon-tools-stt-timeline-enabled';
+const LEGACY_TRANSFORMERS_CACHE_KEY = 'transformers-cache';
+const LEGACY_VOSK_CACHE_KEY = 'vosk-model-cache';
+const LEGACY_LANGUAGE_STORAGE_KEY = 'udon-tools-stt-language';
+const LEGACY_TIMELINE_STORAGE_KEY = 'udon-tools-stt-timeline-enabled';
+const LANGUAGE_STORAGE_KEY = toolLocalStorageKey(SPEECH_TO_TEXT_TOOL_SLUG, 'settings', 'language');
+const TIMELINE_STORAGE_KEY = toolLocalStorageKey(SPEECH_TO_TEXT_TOOL_SLUG, 'settings', 'timeline-enabled');
 const MAX_AUDIO_BYTES = 30 * 1024 * 1024;
 
 export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
@@ -277,7 +290,8 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
     }
 
     setCacheState('checking');
-    const cache = await window.caches.open(CACHE_KEY);
+    await migrateLegacySpeechModelCache(model);
+    const cache = await window.caches.open(SPEECH_MODEL_CACHE_NAME);
     const keys = await cache.keys();
     const coverage = getSpeechModelCacheCoverage(
       keys.map((request) => request.url),
@@ -294,8 +308,9 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
     }
 
     setVoskCacheState('checking');
-    const cache = await window.caches.open(VOSK_CACHE_KEY);
-    const cached = await cache.match(timelineModel.modelUrl);
+    await migrateLegacyVoskModelCache(timelineModel);
+    const cache = await window.caches.open(SPEECH_MODEL_CACHE_NAME);
+    const cached = await cache.match(getVoskModelCachePath(timelineModel));
     setVoskCacheState(cached ? 'downloaded' : 'empty');
   }
 
@@ -307,8 +322,12 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
 
   async function deleteVoskModelCache(timelineModel: VoskTimelineModel) {
     if (!timelineModel.modelUrl || typeof window === 'undefined' || !('caches' in window)) return;
-    const cache = await window.caches.open(VOSK_CACHE_KEY);
-    await cache.delete(timelineModel.modelUrl);
+    const cache = await window.caches.open(SPEECH_MODEL_CACHE_NAME);
+    const keys = await cache.keys();
+    await Promise.all(keys.filter((request) => isVoskModelCacheUrl(request.url, timelineModel)).map((request) => cache.delete(request)));
+
+    const legacyCache = await window.caches.open(LEGACY_VOSK_CACHE_KEY);
+    await legacyCache.delete(timelineModel.modelUrl);
   }
 
   function stopRecordingStream() {
@@ -407,9 +426,12 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
     resetModelProgress();
 
     if (typeof window !== 'undefined' && 'caches' in window) {
-      const cache = await window.caches.open(CACHE_KEY);
+      const cache = await window.caches.open(SPEECH_MODEL_CACHE_NAME);
       const keys = await cache.keys();
       await Promise.all(keys.filter((request) => isModelCacheRequest(request.url, selectedModel.modelId)).map((request) => cache.delete(request)));
+
+      const legacyCache = await window.caches.open(LEGACY_TRANSFORMERS_CACHE_KEY);
+      await Promise.all(selectedModel.requiredFiles.map((file) => legacyCache.delete(getLegacySpeechModelUrl(selectedModel, file))));
     }
 
     await deleteVoskModelCache(getVoskTimelineModel(language));
@@ -797,7 +819,7 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
                 <span>{sttText(locale, 'cache')}</span>
                 <div>
                   <strong>{cacheLabel}</strong>
-                  <small>{CACHE_KEY}</small>
+                  <small>{SPEECH_MODEL_CACHE_NAME}</small>
                 </div>
               </div>
               <div className="stt-model-actions">
@@ -1538,8 +1560,10 @@ async function loadTranscriber(modelId: string, backend: Backend, onProgress: (i
 
   env.allowRemoteModels = true;
   env.useBrowserCache = true;
-  env.useWasmCache = true;
-  env.cacheKey = CACHE_KEY;
+  env.useCustomCache = true;
+  env.customCache = createSpeechModelBrowserCache(getSpeechModelById(modelId));
+  env.useWasmCache = false;
+  env.cacheKey = SPEECH_MODEL_CACHE_NAME;
 
   const loaded = await pipeline('automatic-speech-recognition', modelId, {
     device: backend,
@@ -1548,6 +1572,73 @@ async function loadTranscriber(modelId: string, backend: Backend, onProgress: (i
   });
 
   return bindProcessorTokenizer(loaded as Transcriber);
+}
+
+type TransformersBrowserCache = {
+  match: (request: string) => Promise<Response | undefined>;
+  put: (request: string, response: Response) => Promise<void>;
+  delete: (request: string) => Promise<boolean>;
+};
+
+function createSpeechModelBrowserCache(model: SpeechModelOption): TransformersBrowserCache {
+  const cachePromise = window.caches.open(SPEECH_MODEL_CACHE_NAME);
+
+  return {
+    async match(request: string) {
+      const relativePath = getSpeechModelFileFromTransformersRequest(request, model);
+      if (!relativePath) return undefined;
+      return (await cachePromise).match(getSpeechModelFileCachePath(model, relativePath));
+    },
+    async put(request: string, response: Response) {
+      const relativePath = getSpeechModelFileFromTransformersRequest(request, model);
+      if (!relativePath) return;
+      await (await cachePromise).put(getSpeechModelFileCachePath(model, relativePath), response);
+    },
+    async delete(request: string) {
+      const relativePath = getSpeechModelFileFromTransformersRequest(request, model);
+      if (!relativePath) return false;
+      return await (await cachePromise).delete(getSpeechModelFileCachePath(model, relativePath));
+    },
+  };
+}
+
+async function migrateLegacySpeechModelCache(model: SpeechModelOption): Promise<void> {
+  if (typeof window === 'undefined' || !('caches' in window)) return;
+
+  const legacyCache = await window.caches.open(LEGACY_TRANSFORMERS_CACHE_KEY);
+  const nextCache = await window.caches.open(SPEECH_MODEL_CACHE_NAME);
+
+  await Promise.all(
+    model.requiredFiles.map(async (relativePath) => {
+      const legacyUrl = getLegacySpeechModelUrl(model, relativePath);
+      const existing = await nextCache.match(getSpeechModelFileCachePath(model, relativePath));
+      if (existing) return;
+
+      const response = await legacyCache.match(legacyUrl);
+      if (!response) return;
+      await nextCache.put(getSpeechModelFileCachePath(model, relativePath), response.clone());
+      await legacyCache.delete(legacyUrl);
+    }),
+  );
+}
+
+async function migrateLegacyVoskModelCache(timelineModel: VoskTimelineModel): Promise<void> {
+  if (!timelineModel.modelUrl || typeof window === 'undefined' || !('caches' in window)) return;
+
+  const legacyCache = await window.caches.open(LEGACY_VOSK_CACHE_KEY);
+  const nextCache = await window.caches.open(SPEECH_MODEL_CACHE_NAME);
+  const nextPath = getVoskModelCachePath(timelineModel);
+  const existing = await nextCache.match(nextPath);
+  if (existing) return;
+
+  const response = await legacyCache.match(timelineModel.modelUrl);
+  if (!response) return;
+  await nextCache.put(nextPath, response.clone());
+  await legacyCache.delete(timelineModel.modelUrl);
+}
+
+function getLegacySpeechModelUrl(model: SpeechModelOption, relativePath: string): string {
+  return `https://huggingface.co/${model.modelId}/resolve/main/${relativePath}`;
 }
 
 async function recognizeVoskBuffer(model: VoskModel, audioBuffer: AudioBuffer, modelName: string): Promise<TimedTranscriptOutput> {
@@ -1622,7 +1713,7 @@ async function fetchVoskModelBlobUrl(timelineModel: VoskTimelineModel, onProgres
     throw new Error('Vosk model URL is unavailable.');
   }
 
-  const cachedBlob = await readCachedVoskModel(modelUrl);
+  const cachedBlob = await readCachedVoskModel(timelineModel);
   if (cachedBlob) {
     onProgress(100);
     return URL.createObjectURL(cachedBlob);
@@ -1639,7 +1730,7 @@ async function fetchVoskModelBlobUrl(timelineModel: VoskTimelineModel, onProgres
   if (!response.body || total <= 0) {
     const downloadedBlob = await response.blob();
     const blob = await normalizeVoskModelArchive(downloadedBlob, timelineModel.archiveFormat);
-    await cacheVoskModel(modelUrl, blob, 'application/gzip');
+    await cacheVoskModel(timelineModel, blob, 'application/gzip');
     onProgress(100);
     return URL.createObjectURL(blob);
   }
@@ -1665,23 +1756,23 @@ async function fetchVoskModelBlobUrl(timelineModel: VoskTimelineModel, onProgres
 
   const downloadedBlob = new Blob(chunks, { type: contentType });
   const blob = await normalizeVoskModelArchive(downloadedBlob, timelineModel.archiveFormat);
-  await cacheVoskModel(modelUrl, blob, 'application/gzip');
+  await cacheVoskModel(timelineModel, blob, 'application/gzip');
   onProgress(100);
   return URL.createObjectURL(blob);
 }
 
-async function readCachedVoskModel(modelUrl: string): Promise<Blob | null> {
+async function readCachedVoskModel(timelineModel: VoskTimelineModel): Promise<Blob | null> {
   if (typeof window === 'undefined' || !('caches' in window)) return null;
-  const cache = await window.caches.open(VOSK_CACHE_KEY);
-  const response = await cache.match(modelUrl);
+  const cache = await window.caches.open(SPEECH_MODEL_CACHE_NAME);
+  const response = await cache.match(getVoskModelCachePath(timelineModel));
   return response ? await response.blob() : null;
 }
 
-async function cacheVoskModel(modelUrl: string, blob: Blob, contentType: string) {
+async function cacheVoskModel(timelineModel: VoskTimelineModel, blob: Blob, contentType: string) {
   if (typeof window === 'undefined' || !('caches' in window)) return;
-  const cache = await window.caches.open(VOSK_CACHE_KEY);
+  const cache = await window.caches.open(SPEECH_MODEL_CACHE_NAME);
   await cache.put(
-    modelUrl,
+    getVoskModelCachePath(timelineModel),
     new Response(blob, {
       headers: {
         'content-type': contentType,
@@ -1740,7 +1831,7 @@ function getStoredSpeechLanguageFromStorage(): SpeechLanguage | null {
   if (typeof window === 'undefined') return null;
 
   try {
-    return getStoredSpeechLanguage(window.localStorage.getItem(LANGUAGE_STORAGE_KEY));
+    return getStoredSpeechLanguage(window.localStorage.getItem(LANGUAGE_STORAGE_KEY)) ?? getStoredSpeechLanguage(window.localStorage.getItem(LEGACY_LANGUAGE_STORAGE_KEY));
   } catch {
     return null;
   }
@@ -1755,6 +1846,7 @@ function rememberSpeechLanguage(language: SpeechLanguage) {
 
   try {
     window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    window.localStorage.removeItem(LEGACY_LANGUAGE_STORAGE_KEY);
   } catch {
     // Ignore storage failures so private browsing or blocked storage does not break transcription.
   }
@@ -1764,7 +1856,7 @@ function getStoredTimelineEnabled(): boolean {
   if (typeof window === 'undefined') return false;
 
   try {
-    return window.localStorage.getItem(TIMELINE_STORAGE_KEY) === 'true';
+    return window.localStorage.getItem(TIMELINE_STORAGE_KEY) === 'true' || window.localStorage.getItem(LEGACY_TIMELINE_STORAGE_KEY) === 'true';
   } catch {
     return false;
   }
@@ -1775,6 +1867,7 @@ function rememberTimelineEnabled(enabled: boolean) {
 
   try {
     window.localStorage.setItem(TIMELINE_STORAGE_KEY, String(enabled));
+    window.localStorage.removeItem(LEGACY_TIMELINE_STORAGE_KEY);
   } catch {
     // Ignore storage failures so private browsing or blocked storage does not break transcription.
   }

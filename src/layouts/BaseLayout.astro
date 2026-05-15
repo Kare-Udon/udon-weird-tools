@@ -71,11 +71,21 @@ const pageDescription = description ?? t(locale, 'siteDescription');
         });
       });
 
-      if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-        navigator.serviceWorker
-          .register('/service-worker.js')
-          .then((registration) => registration.update())
-          .catch(() => {});
+      if ('serviceWorker' in navigator) {
+        if (import.meta.env.PROD) {
+          navigator.serviceWorker
+            .register('/service-worker.js')
+            .then((registration) => registration.update())
+            .catch(() => {});
+        }
+
+        if (import.meta.env.DEV) {
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            registrations.forEach((registration) => {
+              void registration['unregister']();
+            });
+          });
+        }
       }
     </script>
   </body>

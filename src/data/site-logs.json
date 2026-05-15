@@ -3,6 +3,15 @@
     "date": "2026-05-15",
     "items": [
       {
+        "id": "2026-05-15-pending-d12373a590",
+        "commitSubject": "Align STT storage with manager contract",
+        "summary": {
+          "en": "Speech-to-text storage now uses the shared storage manager format, making cached models and settings easier to review and clear.",
+          "ja": "音声文字起こしの保存先を共通のストレージ管理形式に合わせ、キャッシュ済みモデルと設定を確認・削除しやすくしました。",
+          "zh-CN": "语音转文字存储已对齐统一存储管理格式，缓存模型和设置更容易查看与清理。"
+        }
+      },
+      {
         "id": "2026-05-15-pending-e8584253b7",
         "commitSubject": "Consolidate STT site logs",
         "summary": {
