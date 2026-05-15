@@ -1538,8 +1538,9 @@ async function createProgressStreamer(
 
 async function loadTranscriber(modelId: string, backend: Backend, onProgress: (info: ProgressInfo) => void): Promise<Transcriber> {
   const { pipeline, env } = await import('@huggingface/transformers');
-  const wasmFactoryUrl = new URL('/vendor/onnxruntime/ort-wasm-simd-threaded.jsep.mjs', window.location.href).href;
-  const wasmBinaryUrl = new URL('/vendor/onnxruntime/ort-wasm-simd-threaded.jsep.wasm', window.location.href).href;
+  // Transformers imports onnxruntime-web/webgpu, whose wasm factory exposes webgpuInit.
+  const wasmFactoryUrl = new URL('/vendor/onnxruntime/ort-wasm-simd-threaded.asyncify.mjs', window.location.href).href;
+  const wasmBinaryUrl = new URL('/vendor/onnxruntime/ort-wasm-simd-threaded.asyncify.wasm', window.location.href).href;
 
   const onnxBackend = env.backends.onnx as {
     wasm?: {
