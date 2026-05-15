@@ -3,6 +3,15 @@
     "date": "2026-05-15",
     "items": [
       {
+        "id": "2026-05-15-pending-aec45d868d",
+        "commitSubject": "Remember STT preferences",
+        "summary": {
+          "en": "Speech-to-text now remembers your selected language and timeline setting between visits.",
+          "ja": "音声文字起こしで、選択した言語とタイムライン設定が次回以降も保持されるようになりました。",
+          "zh-CN": "语音转文字现在会在下次访问时保留你选择的语言和时间线设置。"
+        }
+      },
+      {
         "id": "2026-05-15-pending-e1a5b74d55",
         "commitSubject": "Defer timeline transcript display",
         "summary": {

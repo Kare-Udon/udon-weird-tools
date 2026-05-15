@@ -100,6 +100,8 @@ type Transcriber = {
 
 const CACHE_KEY = 'transformers-cache';
 const VOSK_CACHE_KEY = 'vosk-model-cache';
+const LANGUAGE_STORAGE_KEY = 'udon-tools-stt-language';
+const TIMELINE_STORAGE_KEY = 'udon-tools-stt-timeline-enabled';
 const MAX_AUDIO_BYTES = 30 * 1024 * 1024;
 
 export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
@@ -108,7 +110,7 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
   const [backend, setBackend] = useState<Backend>('wasm');
   const [webGpuAvailable, setWebGpuAvailable] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [language, setLanguage] = useState<SpeechLanguage>(() => getDefaultSpeechLanguage(locale));
+  const [language, setLanguage] = useState<SpeechLanguage>(() => getInitialSpeechLanguage(locale));
   const selectedModel = getSpeechModel(language);
   const [cacheCoverage, setCacheCoverage] = useState(() => ({ downloadedFiles: 0, totalFiles: selectedModel.requiredFiles.length }));
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -121,7 +123,7 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
   const [processingProgress, setProcessingProgress] = useState(0);
   const [processingDetail, setProcessingDetail] = useState('');
   const [output, setOutput] = useState<TranscriptionOutput | null>(null);
-  const [timelineEnabled, setTimelineEnabled] = useState(false);
+  const [timelineEnabled, setTimelineEnabled] = useState(() => getInitialTimelineEnabled());
   const [alignmentState, setAlignmentState] = useState<AlignmentState>('idle');
   const [voskModelState, setVoskModelState] = useState<VoskModelState>('idle');
   const [voskCacheState, setVoskCacheState] = useState<CacheState>('checking');
@@ -149,6 +151,14 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
     setWebGpuAvailable(hasGpu);
     setBackend(hasGpu ? 'webgpu' : 'wasm');
   }, []);
+
+  useEffect(() => {
+    rememberSpeechLanguage(language);
+  }, [language]);
+
+  useEffect(() => {
+    rememberTimelineEnabled(timelineEnabled);
+  }, [timelineEnabled]);
 
   useEffect(() => {
     runIdRef.current += 1;
@@ -799,7 +809,7 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
         <div className="stt-global-controls">
           <label className="stt-language-field">
             <span>{sttText(locale, 'language')}</span>
-            <select value={language} onChange={(event) => setLanguage(event.currentTarget.value as SpeechLanguage)} disabled={controlsDisabled}>
+            <select value={language} onChange={(event) => setLanguage(getStoredSpeechLanguage(event.currentTarget.value) ?? getDefaultSpeechLanguage(locale))} disabled={controlsDisabled}>
               {speechModelOptions.map((option) => (
                 <option key={option.language} value={option.language}>
                   {option.labels[locale] ?? option.labels.en}
@@ -1688,6 +1698,50 @@ function isModelCacheRequest(url: string, modelId: string): boolean {
 
 function getSpeechModelById(modelId: string) {
   return speechModelOptions.find((option) => option.modelId === modelId) ?? speechModelOptions[0];
+}
+
+function getInitialSpeechLanguage(locale: Locale): SpeechLanguage {
+  if (typeof window === 'undefined') return getDefaultSpeechLanguage(locale);
+
+  try {
+    return getStoredSpeechLanguage(window.localStorage.getItem(LANGUAGE_STORAGE_KEY)) ?? getDefaultSpeechLanguage(locale);
+  } catch {
+    return getDefaultSpeechLanguage(locale);
+  }
+}
+
+function getStoredSpeechLanguage(value: string | null): SpeechLanguage | null {
+  return speechModelOptions.find((option) => option.language === value)?.language ?? null;
+}
+
+function rememberSpeechLanguage(language: SpeechLanguage) {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+  } catch {
+    // Ignore storage failures so private browsing or blocked storage does not break transcription.
+  }
+}
+
+function getInitialTimelineEnabled(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    return window.localStorage.getItem(TIMELINE_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function rememberTimelineEnabled(enabled: boolean) {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(TIMELINE_STORAGE_KEY, String(enabled));
+  } catch {
+    // Ignore storage failures so private browsing or blocked storage does not break transcription.
+  }
 }
 
 function getCacheLabel(locale: Locale, cacheState: CacheState, coverage: { downloadedFiles: number; totalFiles: number }): string {
