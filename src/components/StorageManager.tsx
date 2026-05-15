@@ -538,10 +538,10 @@ async function collectDatabaseEntries(): Promise<DatabaseEntry[]> {
         const keys = await requestToPromise<IDBValidKey[]>(store.getAllKeys());
 
         for (const key of keys) {
-          const value = await requestToPromise<unknown>(store.get(key));
           const keyText = stableKeyText(key);
           if (isInternalRuntimeDatabaseEntry(databaseInfo.name, storeName, keyText)) continue;
 
+          const value = await requestToPromise<unknown>(store.get(key));
           const preview = previewStorageValue(value, 1200);
           const toolKey = inferStorageToolKey([databaseInfo.name, storeName, keyText, preview]);
           entries.push({

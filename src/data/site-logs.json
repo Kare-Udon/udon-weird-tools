@@ -3,6 +3,15 @@
     "date": "2026-05-15",
     "items": [
       {
+        "id": "2026-05-15-pending-097363800b",
+        "commitSubject": "Skip Vosk runtime blobs before reading values",
+        "summary": {
+          "en": "The storage manager now skips internal Vosk runtime data before loading item values.",
+          "ja": "ストレージ管理で、項目の値を読み込む前に内部の Vosk ランタイムデータを除外するようにしました。",
+          "zh-CN": "存储管理器现在会在读取条目值之前跳过内部 Vosk 运行时数据。"
+        }
+      },
+      {
         "id": "2026-05-15-pending-d12373a590",
         "commitSubject": "Align STT storage with manager contract",
         "summary": {
