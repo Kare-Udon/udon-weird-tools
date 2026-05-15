@@ -3,6 +3,15 @@
     "date": "2026-05-15",
     "items": [
       {
+        "id": "2026-05-15-pending-9e575d3f3d",
+        "commitSubject": "Unify STT model loading progress",
+        "summary": {
+          "en": "Speech-to-text now shows one unified loading progress state while speech and timeline models prepare.",
+          "ja": "音声文字起こしで、音声モデルとタイムラインモデルの準備中に統一された読み込み進捗を表示するようになりました。",
+          "zh-CN": "语音转文字现在会在语音和时间轴模型准备时显示统一的加载进度状态。"
+        }
+      },
+      {
         "id": "2026-05-15-pending-e310855703",
         "commitSubject": "Fix Japanese timeline alignment",
         "summary": {

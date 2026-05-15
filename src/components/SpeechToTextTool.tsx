@@ -702,6 +702,15 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
   const cacheLabel = getCacheLabel(locale, cacheState, cacheCoverage);
   const modelStatusLabel = modelState === 'ready' ? sttText(locale, 'ready') : modelState === 'loading' ? `${Math.round(progress)}%` : cacheLabel;
   const voskStatusLabel = getVoskStatusLabel(locale, timelineEnabled, timelineAvailable, voskModelState, voskCacheState, voskProgress);
+  const modelLoading = modelState === 'loading' || voskModelState === 'downloading' || voskModelState === 'loading';
+  const modelLoadingLabel =
+    modelState === 'loading'
+      ? sttText(locale, 'loading')
+      : voskModelState === 'downloading'
+        ? sttText(locale, 'downloadingTimeline')
+        : sttText(locale, 'initializingTimeline');
+  const modelLoadingProgress = modelState === 'loading' ? progress : voskModelState === 'downloading' ? voskProgress : null;
+  const modelLoadingDetail = modelLoadingProgress === null ? '...' : `${Math.round(modelLoadingProgress)}%`;
   const combinedModelStatusLabel = getCombinedModelStatusLabel(locale, {
     moonshineState: modelState,
     moonshineCacheState: cacheState,
@@ -794,14 +803,20 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
           </details>
         </div>
 
-        {modelState === 'loading' && (
+        {modelLoading && (
           <div className="stt-model-loading" role="status">
             <div className="stt-processing-meta">
-              <span>{sttText(locale, 'loading')}</span>
-              <strong>{Math.round(progress)}%</strong>
+              <span>{modelLoadingLabel}</span>
+              <strong>{modelLoadingDetail}</strong>
             </div>
-            <div className="stt-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
-              <div style={{ inlineSize: `${progress}%` }} />
+            <div
+              className={modelLoadingProgress === null ? 'stt-progress stt-progress--indeterminate' : 'stt-progress'}
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={modelLoadingProgress === null ? undefined : Math.round(modelLoadingProgress)}
+            >
+              <div style={modelLoadingProgress === null ? undefined : { inlineSize: `${modelLoadingProgress}%` }} />
             </div>
           </div>
         )}
@@ -890,7 +905,7 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
           </div>
         )}
 
-        {transcribing && (
+        {transcribing && !modelLoading && (
           <div className="stt-processing">
             <div className="stt-processing-meta">
               <span>{processingLabel}</span>
