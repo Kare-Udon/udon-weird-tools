@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type Locale } from '@/i18n/config';
 import { t } from '@/i18n/ui';
+import { toolLocalStorageKey } from '@/lib/local/storage-contract';
 import { localize } from '@/i18n/utils';
 import { saveRecentRun } from '@/lib/local/recent';
 import { assertSerializable, stringifyResult } from '@/lib/runtime/serializable';
@@ -14,7 +15,7 @@ type ToolPlaygroundProps = {
 
 type FormValue = string | number | boolean | File | null;
 type FormValues = Record<string, FormValue>;
-const FAVORITE_RESULTS_PREFIX = 'weird-tools:favorite-results:';
+const FAVORITE_RESULTS_ENTRY_ID = 'favorite-results';
 
 export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
   const autoPreview = slug === 'unicode-fancy-text';
@@ -56,7 +57,7 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
   useEffect(() => {
     if (!autoPreview || typeof window === 'undefined') return;
 
-    const raw = window.localStorage.getItem(`${FAVORITE_RESULTS_PREFIX}${slug}`);
+    const raw = window.localStorage.getItem(toolLocalStorageKey(slug, 'data', FAVORITE_RESULTS_ENTRY_ID));
     if (!raw) return;
 
     try {
@@ -239,7 +240,7 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
         const next = current.includes(itemId) ? current.filter((id) => id !== itemId) : [...current, itemId];
 
         if (typeof window !== 'undefined') {
-          window.localStorage.setItem(`${FAVORITE_RESULTS_PREFIX}${slug}`, JSON.stringify(next));
+          window.localStorage.setItem(toolLocalStorageKey(slug, 'data', FAVORITE_RESULTS_ENTRY_ID), JSON.stringify(next));
         }
 
         return next;

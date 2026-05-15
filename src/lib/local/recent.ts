@@ -1,4 +1,6 @@
-const RECENT_PREFIX = 'weird-tools:last-run:';
+import { toolLocalStorageKey } from './storage-contract';
+
+const RECENT_ENTRY_ID = 'recent-run';
 
 export type RecentRun = {
   slug: string;
@@ -10,13 +12,13 @@ export type RecentRun = {
 export function saveRecentRun(run: RecentRun): void {
   if (typeof window === 'undefined') return;
 
-  window.localStorage.setItem(`${RECENT_PREFIX}${run.slug}`, JSON.stringify(run));
+  window.localStorage.setItem(toolLocalStorageKey(run.slug, 'data', RECENT_ENTRY_ID), JSON.stringify(run));
 }
 
 export function readRecentRun(slug: string): RecentRun | null {
   if (typeof window === 'undefined') return null;
 
-  const raw = window.localStorage.getItem(`${RECENT_PREFIX}${slug}`);
+  const raw = window.localStorage.getItem(toolLocalStorageKey(slug, 'data', RECENT_ENTRY_ID));
   if (!raw) return null;
 
   try {

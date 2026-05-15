@@ -7,6 +7,7 @@ export const clientToolLoaders = {
   'timestamp-converter': async () => (await import('./timestamp-converter')).default as LoadedToolModule,
   'case-converter': async () => (await import('./case-converter')).default as LoadedToolModule,
   'unicode-fancy-text': async () => (await import('./unicode-fancy-text')).default as LoadedToolModule,
+  'storage-manager': async () => (await import('./storage-manager')).default as LoadedToolModule,
   'vrc-photo-metadata': async () => (await import('./vrc-photo-metadata')).default as LoadedToolModule,
   'unitypackage-extractor': async () => (await import('./unitypackage-extractor')).default as LoadedToolModule,
 } satisfies Record<string, () => Promise<LoadedToolModule>>;

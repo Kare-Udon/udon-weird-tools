@@ -48,6 +48,43 @@ Reuse the shared layout unless the tool truly needs custom interaction.
 - Long results must wrap or scroll without widening the page.
 - Show the copy button only when a result exists.
 
+## Browser Storage Contract
+
+Use this contract for any tool data that should be visible and deletable in Storage Manager. Do not invent one-off localStorage keys, IndexedDB names, Cache Storage names, or OPFS directory layouts.
+
+Tool `run.ts` files must remain pure and must not access browser storage directly. Storage writes belong in React islands or shared browser-side helpers under `src/lib/local/`.
+
+Use `src/lib/local/storage-contract.ts` to build storage names and paths:
+
+```ts
+toolLocalStorageKey(toolSlug, 'data', entryId);
+toolLocalStorageKey(toolSlug, 'settings', entryId);
+toolIndexedDbName(toolSlug);
+toolCacheName(toolSlug);
+toolModelCachePath(toolSlug, modelId, relativePath);
+toolOpfsModelPath(toolSlug, modelId, relativePath);
+```
+
+Required ownership rules:
+
+- `toolSlug` must be the manifest slug. This is how Storage Manager groups data by tool.
+- `entryId` names one deletable database item, for example `recent-run`, `favorite-results`, or `draft-input`.
+- `modelId` names the whole model, not an individual file. Use values like `moonshine-tiny-en` or `Kokoro-82M-v1.0-ONNX`; do not use `model.onnx`, `tokenizer.json`, `voices`, or `main`.
+- `relativePath` is the file path inside that model group, for example `onnx/model.onnx` or `voices/af_heart.bin`.
+
+Storage layouts:
+
+- localStorage keys: `weird-tools:tool:<tool-slug>:data:<entry-id>` or `weird-tools:tool:<tool-slug>:settings:<entry-id>`.
+- IndexedDB database names: `weird-tools:tool:<tool-slug>`. Store names should describe the data class, such as `data`, `settings`, or `models`.
+- Cache Storage names: `weird-tools:tool:<tool-slug>:files`. Cache model files under synthetic same-origin request paths from `toolModelCachePath()`, not under the original remote URL.
+- OPFS model files: `tools/<tool-slug>/models/<model-id>/<relative-path>`.
+
+Deletion boundaries:
+
+- Database deletion removes one entry only.
+- File deletion removes the whole `modelId` group for a tool.
+- Storage Manager only classifies data that follows this contract. Legacy or ad hoc storage is not guessed into a tool group.
+
 ## Mobile Check
 
 Check at mobile width:

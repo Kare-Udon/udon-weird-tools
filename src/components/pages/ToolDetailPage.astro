@@ -1,5 +1,6 @@
 ---
 import ToolPlayground from '@/components/ToolPlayground';
+import StorageManager from '@/components/StorageManager';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { type Locale } from '@/i18n/config';
 import { t } from '@/i18n/ui';
@@ -31,6 +32,6 @@ const toolDescription = localize(tool.i18n.description, locale);
       </div>
     </header>
 
-    <ToolPlayground client:load slug={tool.slug} locale={locale} />
+    {tool.slug === 'storage-manager' ? <StorageManager client:load locale={locale} /> : <ToolPlayground client:load slug={tool.slug} locale={locale} />}
   </article>
 </BaseLayout>
