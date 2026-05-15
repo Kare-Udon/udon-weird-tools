@@ -60,6 +60,40 @@ test('falls back to textarea copy when Clipboard API fails', async () => {
   assert.equal(copiedValue, 'fallback');
 });
 
+test('falls back to textarea copy when Clipboard API hangs', async () => {
+  let copiedValue = '';
+  const textarea = {
+    value: '',
+    style: {},
+    setAttribute() {},
+    focus() {},
+    select() {},
+    setSelectionRange() {},
+    remove() {},
+  };
+
+  setGlobal('navigator', {
+    clipboard: {
+      writeText: async () => new Promise(() => {}),
+    },
+  });
+  setGlobal('document', {
+    body: {
+      append() {},
+    },
+    createElement() {
+      return textarea;
+    },
+    execCommand(command) {
+      copiedValue = textarea.value;
+      return command === 'copy';
+    },
+  });
+
+  assert.equal(await copyTextToClipboard(' delayed fallback '), true);
+  assert.equal(copiedValue, 'delayed fallback');
+});
+
 test('reports failure when no copy path is available', async () => {
   setGlobal('navigator', {});
   setGlobal('document', {});

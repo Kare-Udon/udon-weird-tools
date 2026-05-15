@@ -110,7 +110,7 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
   const [backend, setBackend] = useState<Backend>('wasm');
   const [webGpuAvailable, setWebGpuAvailable] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [language, setLanguage] = useState<SpeechLanguage>(() => getInitialSpeechLanguage(locale));
+  const [language, setLanguage] = useState<SpeechLanguage>(() => getDefaultSpeechLanguage(locale));
   const selectedModel = getSpeechModel(language);
   const [cacheCoverage, setCacheCoverage] = useState(() => ({ downloadedFiles: 0, totalFiles: selectedModel.requiredFiles.length }));
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -123,7 +123,7 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
   const [processingProgress, setProcessingProgress] = useState(0);
   const [processingDetail, setProcessingDetail] = useState('');
   const [output, setOutput] = useState<TranscriptionOutput | null>(null);
-  const [timelineEnabled, setTimelineEnabled] = useState(() => getInitialTimelineEnabled());
+  const [timelineEnabled, setTimelineEnabled] = useState(false);
   const [alignmentState, setAlignmentState] = useState<AlignmentState>('idle');
   const [voskModelState, setVoskModelState] = useState<VoskModelState>('idle');
   const [voskCacheState, setVoskCacheState] = useState<CacheState>('checking');
@@ -131,6 +131,7 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
   const [timedOutput, setTimedOutput] = useState<TimedTranscriptOutput | null>(null);
   const [error, setError] = useState('');
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
+  const [preferencesLoaded, setPreferencesLoaded] = useState(false);
   const transcriberRef = useRef<Transcriber | null>(null);
   const loadingRef = useRef<Promise<Transcriber> | null>(null);
   const loadedModelIdRef = useRef<string | null>(null);
@@ -153,12 +154,20 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
   }, []);
 
   useEffect(() => {
-    rememberSpeechLanguage(language);
-  }, [language]);
+    setLanguage(getStoredSpeechLanguageFromStorage() ?? getDefaultSpeechLanguage(locale));
+    setTimelineEnabled(getStoredTimelineEnabled());
+    setPreferencesLoaded(true);
+  }, [locale]);
 
   useEffect(() => {
+    if (!preferencesLoaded) return;
+    rememberSpeechLanguage(language);
+  }, [language, preferencesLoaded]);
+
+  useEffect(() => {
+    if (!preferencesLoaded) return;
     rememberTimelineEnabled(timelineEnabled);
-  }, [timelineEnabled]);
+  }, [timelineEnabled, preferencesLoaded]);
 
   useEffect(() => {
     runIdRef.current += 1;
@@ -1432,6 +1441,7 @@ function findSentenceSplitIndex(text: string): number {
 }
 
 function needsJoinSpace(left: string, right: string): boolean {
+  if (/\s/.test(left) || /\s/.test(right)) return true;
   return /[A-Za-z0-9]$/.test(left.trim()) && /^[A-Za-z0-9]/.test(right.trim());
 }
 
@@ -1715,13 +1725,13 @@ function getSpeechModelById(modelId: string) {
   return speechModelOptions.find((option) => option.modelId === modelId) ?? speechModelOptions[0];
 }
 
-function getInitialSpeechLanguage(locale: Locale): SpeechLanguage {
-  if (typeof window === 'undefined') return getDefaultSpeechLanguage(locale);
+function getStoredSpeechLanguageFromStorage(): SpeechLanguage | null {
+  if (typeof window === 'undefined') return null;
 
   try {
-    return getStoredSpeechLanguage(window.localStorage.getItem(LANGUAGE_STORAGE_KEY)) ?? getDefaultSpeechLanguage(locale);
+    return getStoredSpeechLanguage(window.localStorage.getItem(LANGUAGE_STORAGE_KEY));
   } catch {
-    return getDefaultSpeechLanguage(locale);
+    return null;
   }
 }
 
@@ -1739,7 +1749,7 @@ function rememberSpeechLanguage(language: SpeechLanguage) {
   }
 }
 
-function getInitialTimelineEnabled(): boolean {
+function getStoredTimelineEnabled(): boolean {
   if (typeof window === 'undefined') return false;
 
   try {
