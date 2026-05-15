@@ -3,6 +3,15 @@
     "date": "2026-05-15",
     "items": [
       {
+        "id": "2026-05-15-pending-e310855703",
+        "commitSubject": "Fix Japanese timeline alignment",
+        "summary": {
+          "en": "Improved timeline alignment for Japanese speech-to-text results.",
+          "ja": "日本語の音声文字起こし結果のタイムライン位置合わせを改善しました。",
+          "zh-CN": "改进了日语语音转文字结果的时间线对齐。"
+        }
+      },
+      {
         "id": "2026-05-15-pending-aec45d868d",
         "commitSubject": "Remember STT preferences",
         "summary": {

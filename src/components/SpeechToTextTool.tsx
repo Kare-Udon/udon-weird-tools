@@ -1401,9 +1401,9 @@ function normalizeTextChars(text: string): string[] {
 }
 
 function normalizeChar(char: string): string | null {
-  const normalized = char.trim().toLowerCase();
+  const normalized = char.normalize('NFKC').trim().toLowerCase();
   if (!normalized) return null;
-  if (/[\p{Script=Han}a-z0-9]/u.test(normalized)) return normalized;
+  if (/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}a-z0-9]/u.test(normalized)) return normalized;
   return null;
 }
 
