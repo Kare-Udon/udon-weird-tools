@@ -537,16 +537,18 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
       });
 
       if (runIdRef.current !== currentRun) return;
-      setProcessingProgress(100);
-      setProcessingDetail('');
-      setOutput(result);
-
       if (activeTimelineModel?.modelUrl) {
         const timedResult = await createVoskTimeline(file, activeTimelineModel, currentRun);
         if (runIdRef.current !== currentRun) return;
         setTimedOutput(timedResult);
         setAlignmentState('ready');
         setProcessingProgress(100);
+        setProcessingDetail('');
+        setOutput(result);
+      } else {
+        setProcessingProgress(100);
+        setProcessingDetail('');
+        setOutput(result);
       }
     } catch (transcribeError) {
       if (runIdRef.current !== currentRun) return;

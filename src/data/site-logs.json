@@ -3,6 +3,15 @@
     "date": "2026-05-15",
     "items": [
       {
+        "id": "2026-05-15-pending-e1a5b74d55",
+        "commitSubject": "Defer timeline transcript display",
+        "summary": {
+          "en": "Speech-to-text results now wait to appear until the timeline transcript is ready.",
+          "ja": "音声文字起こし結果は、タイムライン付き文字起こしの準備ができてから表示されるようになりました。",
+          "zh-CN": "语音转文字结果现在会等时间轴转写准备好后再显示。"
+        }
+      },
+      {
         "id": "2026-05-15-pending-f84256a362",
         "commitSubject": "Add STT timeline and source-state UI",
         "summary": {
