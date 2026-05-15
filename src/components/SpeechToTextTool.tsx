@@ -977,6 +977,7 @@ function Transcript({
   const [actionLabel, setActionLabel] = useState('');
   const showTimeline = timelineEnabled && Boolean(timedOutput?.words.length);
   const selectedCount = sentences.filter((sentence) => selectedIds.has(sentence.id)).length;
+  const hasCopyableText = sentences.some((sentence) => sentence.text.trim());
   const selectedDuration = sentences.reduce((total, sentence) => {
     if (!selectedIds.has(sentence.id) || sentence.start === null || sentence.end === null) return total;
     return total + Math.max(0, sentence.end - sentence.start);
@@ -1013,6 +1014,10 @@ function Transcript({
   }
 
   async function copyText(text: string) {
+    if (!text.trim()) {
+      setActionLabel(sttText(locale, 'nothingToCopy'));
+      return;
+    }
     const copied = await copyTextToClipboard(text);
     setActionLabel(sttText(locale, copied ? 'copied' : 'copyFailed'));
   }
@@ -1191,8 +1196,8 @@ function Transcript({
       </div>
 
       <div className="stt-transcript-actions">
-        <button type="button" onClick={() => void copyAll()}>{sttText(locale, 'copyAll')}</button>
-        <button type="button" className="primary" onClick={() => void copySelected()}>{sttText(locale, 'copySelected')}</button>
+        <button type="button" onClick={() => void copyAll()} disabled={!hasCopyableText}>{sttText(locale, 'copyAll')}</button>
+        <button type="button" className="primary" onClick={() => void copySelected()} disabled={!hasCopyableText}>{sttText(locale, 'copySelected')}</button>
         <button type="button" onClick={exportTranscript}>{sttText(locale, 'exportTranscript')}</button>
         <button type="button" onClick={resetEdits}>{sttText(locale, 'resetEdits')}</button>
         {actionLabel && <span>{actionLabel}</span>}

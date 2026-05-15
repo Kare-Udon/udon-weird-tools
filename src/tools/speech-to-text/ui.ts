@@ -201,6 +201,11 @@ export const speechToTextUi = {
     ja: 'コピー失敗',
     'zh-CN': '复制失败',
   },
+  nothingToCopy: {
+    en: 'Nothing to copy',
+    ja: 'コピーする内容なし',
+    'zh-CN': '无内容可复制',
+  },
   exported: {
     en: 'Exported',
     ja: 'エクスポート済み',
