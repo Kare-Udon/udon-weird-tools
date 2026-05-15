@@ -3,30 +3,12 @@
     "date": "2026-05-15",
     "items": [
       {
-        "id": "2026-05-15-pending-097363800b",
-        "commitSubject": "Skip Vosk runtime blobs before reading values",
+        "id": "2026-05-15-storage-manager-files",
+        "commitSubject": "Add storage manager file cleanup",
         "summary": {
-          "en": "The storage manager now skips internal Vosk runtime data before loading item values.",
-          "ja": "ストレージ管理で、項目の値を読み込む前に内部の Vosk ランタイムデータを除外するようにしました。",
-          "zh-CN": "存储管理器现在会在读取条目值之前跳过内部 Vosk 运行时数据。"
-        }
-      },
-      {
-        "id": "2026-05-15-pending-d12373a590",
-        "commitSubject": "Align STT storage with manager contract",
-        "summary": {
-          "en": "Speech-to-text storage now uses the shared storage manager format, making cached models and settings easier to review and clear.",
-          "ja": "音声文字起こしの保存先を共通のストレージ管理形式に合わせ、キャッシュ済みモデルと設定を確認・削除しやすくしました。",
-          "zh-CN": "语音转文字存储已对齐统一存储管理格式，缓存模型和设置更容易查看与清理。"
-        }
-      },
-      {
-        "id": "2026-05-15-pending-e8584253b7",
-        "commitSubject": "Consolidate STT site logs",
-        "summary": {
-          "en": "Consolidated the STT site log entries for a cleaner changelog.",
-          "ja": "STTのサイトログ項目を統合し、変更履歴を見やすくしました。",
-          "zh-CN": "合并了 STT 站点日志条目，让更新记录更清晰。"
+          "en": "Added storage management for browser-side database entries and cached model files, with Speech to Text storage aligned to the shared format.",
+          "ja": "ブラウザ側のデータベース項目とキャッシュ済みモデルファイルを管理できるストレージ管理機能を追加し、音声文字起こしの保存形式を共通形式に合わせました。",
+          "zh-CN": "新增浏览器端数据库条目和缓存模型文件的存储管理功能，并让语音转文字存储对齐统一格式。"
         }
       },
       {
