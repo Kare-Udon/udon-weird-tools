@@ -43,6 +43,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  if (isBuildAsset(url)) {
+    event.respondWith(networkFirstAsset(request));
+    return;
+  }
+
   event.respondWith(cacheFirstAsset(request));
 });
 
@@ -105,10 +110,40 @@ async function cacheFirstAsset(request) {
   return response;
 }
 
+async function networkFirstAsset(request) {
+  try {
+    const response = await fetch(request);
+
+    if (response.ok && response.type === 'basic') {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(request, response.clone());
+    }
+
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+
+    if (cached) {
+      return cached;
+    }
+
+    return new Response('Offline', {
+      status: 503,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+      },
+    });
+  }
+}
+
 function normalizePath(path) {
   if (path.length > 1 && path.endsWith('/')) {
     return path.slice(0, -1);
   }
 
   return path;
+}
+
+function isBuildAsset(url) {
+  return url.pathname.startsWith('/_astro/') && /\.(?:css|js)$/.test(url.pathname);
 }
