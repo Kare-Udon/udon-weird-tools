@@ -3,6 +3,15 @@
     "date": "2026-05-15",
     "items": [
       {
+        "id": "2026-05-15-pending-193420293f",
+        "commitSubject": "Fix STT preferences and clipboard fallback",
+        "summary": {
+          "en": "Fixed Speech to Text preference loading and made copy-to-clipboard more reliable when browser clipboard access fails or stalls.",
+          "ja": "音声文字起こしの設定読み込みを修正し、ブラウザーのクリップボード操作が失敗または停止した場合のコピー動作を安定させました。",
+          "zh-CN": "修复了语音转文字的偏好设置加载，并提升了浏览器剪贴板访问失败或卡住时的复制可靠性。"
+        }
+      },
+      {
         "id": "2026-05-15-pending-9e575d3f3d",
         "commitSubject": "Unify STT model loading progress",
         "summary": {

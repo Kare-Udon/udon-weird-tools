@@ -1088,9 +1088,9 @@ function Transcript({
           <strong>{sttText(locale, 'sentenceTranscript')}</strong>
           <span>{showTimeline ? sttText(locale, 'approximateSentenceTiming') : sttText(locale, 'sentenceOnly')}</span>
         </div>
-        <div className="stt-selection-summary">
+        <div className={showTimeline ? 'stt-selection-summary' : 'stt-selection-summary stt-selection-summary--plain'}>
           <span>{selectedCount}/{sentences.length}</span>
-          <strong>{selectedDuration > 0 ? formatSeconds(selectedDuration) : sttText(locale, 'noTiming')}</strong>
+          {showTimeline && <strong>{selectedDuration > 0 ? formatSeconds(selectedDuration) : sttText(locale, 'noTiming')}</strong>}
         </div>
       </div>
 
@@ -1122,13 +1122,24 @@ function Transcript({
 
       <div className="stt-sentence-list">
         {sentences.map((sentence, index) => (
-          <div key={sentence.id} className={sentence.id === activeSentenceId ? 'stt-sentence-row stt-sentence-row--active' : 'stt-sentence-row'}>
-            <button type="button" className="stt-time-pill" onClick={() => void playSentence(sentence)} disabled={!audioUrl}>
-              {sentence.start !== null && sentence.end !== null ? formatTimestamp([sentence.start, sentence.end]) : sttText(locale, 'noTiming')}
-            </button>
+          <div
+            key={sentence.id}
+            className={[
+              'stt-sentence-row',
+              showTimeline ? '' : 'stt-sentence-row--plain',
+              sentence.id === activeSentenceId ? 'stt-sentence-row--active' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
+            {showTimeline && (
+              <button type="button" className="stt-time-pill" onClick={() => void playSentence(sentence)} disabled={!audioUrl || sentence.start === null}>
+                {sentence.start !== null && sentence.end !== null ? formatTimestamp([sentence.start, sentence.end]) : sttText(locale, 'noTiming')}
+              </button>
+            )}
             <textarea value={sentence.text} onChange={(event) => updateSentence(sentence.id, event.currentTarget.value)} aria-label={`${sttText(locale, 'sentence')} ${index + 1}`} rows={2} />
             <div className="stt-sentence-actions">
-              <button type="button" title={sttText(locale, 'playSentence')} aria-label={sttText(locale, 'playSentence')} onClick={() => void playSentence(sentence)} disabled={!audioUrl}>
+              <button type="button" title={sttText(locale, 'playSentence')} aria-label={sttText(locale, 'playSentence')} onClick={() => void playSentence(sentence)} disabled={!audioUrl || sentence.start === null}>
                 <IconPlay />
               </button>
               <button type="button" title={sttText(locale, 'copySentence')} aria-label={sttText(locale, 'copySentence')} onClick={() => void copyText(sentence.text)}>
@@ -1432,6 +1443,7 @@ function findSentenceSplitIndex(text: string): number {
 }
 
 function needsJoinSpace(left: string, right: string): boolean {
+  if (/\s/.test(left) || /\s/.test(right)) return true;
   return /[A-Za-z0-9]$/.test(left.trim()) && /^[A-Za-z0-9]/.test(right.trim());
 }
 
