@@ -41,6 +41,7 @@
   Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://blog.udon.eu.org; font-src 'self'; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://ccoreilly.github.io; worker-src 'self' blob:; frame-ancestors 'none'; form-action 'self'
 
 /vendor/vosk/recognizer-worker.js
+  ! Content-Security-Policy
   Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'; connect-src 'self' blob: data:; worker-src 'none'; frame-ancestors 'none'
 
 /service-worker.js
