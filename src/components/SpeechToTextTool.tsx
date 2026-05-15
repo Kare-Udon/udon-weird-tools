@@ -1550,13 +1550,12 @@ async function loadTranscriber(modelId: string, backend: Backend, onProgress: (i
     };
   };
 
-  onnxBackend.wasm = {
-    ...(onnxBackend.wasm ?? {}),
-    wasmPaths: {
-      mjs: wasmFactoryUrl,
-      wasm: wasmBinaryUrl,
-    },
+  const onnxWasm = onnxBackend.wasm ?? {};
+  onnxWasm.wasmPaths = {
+    mjs: wasmFactoryUrl,
+    wasm: wasmBinaryUrl,
   };
+  onnxBackend.wasm = onnxWasm;
 
   env.allowRemoteModels = true;
   env.useBrowserCache = true;
