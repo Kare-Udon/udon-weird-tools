@@ -1,5 +1,19 @@
 [
   {
+    "date": "2026-05-15",
+    "items": [
+      {
+        "id": "2026-05-15-pending-f84256a362",
+        "commitSubject": "Add STT timeline and source-state UI",
+        "summary": {
+          "en": "Speech-to-text now shows audio source status and can generate a timed transcript timeline.",
+          "ja": "音声文字起こしで音声ソースの状態表示とタイムライン付き文字起こしに対応しました。",
+          "zh-CN": "语音转文字现在会显示音频来源状态，并可生成带时间轴的转写结果。"
+        }
+      }
+    ]
+  },
+  {
     "date": "2026-05-08",
     "items": [
       {
