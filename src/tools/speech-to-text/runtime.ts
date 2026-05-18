@@ -31,8 +31,8 @@ export function bindProcessorTokenizer<T>(pipeline: T): T {
   return pipeline;
 }
 
-export function getOnnxRuntimeWasmPaths(baseUrl: string, hints: BrowserRuntimeHints): OnnxRuntimeWasmPaths {
-  const variant = shouldUsePlainOnnxRuntimeWasm(hints) ? '' : '.asyncify';
+export function getOnnxRuntimeWasmPaths(baseUrl: string, hints: BrowserRuntimeHints, backend: 'webgpu' | 'wasm'): OnnxRuntimeWasmPaths {
+  const variant = backend === 'wasm' && shouldUsePlainOnnxRuntimeWasm(hints) ? '' : '.asyncify';
 
   return {
     mjs: new URL(`/vendor/onnxruntime/ort-wasm-simd-threaded${variant}.mjs`, baseUrl).href,
@@ -54,4 +54,16 @@ export function shouldUsePlainOnnxRuntimeWasm(hints: BrowserRuntimeHints): boole
   }
 
   return /Safari/i.test(userAgent) && !/\b(Chrome|Chromium|CriOS|FxiOS|Edg|OPR|Android)\b/i.test(userAgent);
+}
+
+export function shouldReleaseSpeechRuntimeAfterTranscribe(hints: BrowserRuntimeHints): boolean {
+  const userAgent = hints.userAgent ?? '';
+  const platform = hints.platform ?? '';
+  const maxTouchPoints = hints.maxTouchPoints ?? 0;
+
+  if (/\b(iPhone|iPad|iPod)\b/i.test(userAgent) || /\b(iPhone|iPad|iPod)\b/i.test(platform)) {
+    return true;
+  }
+
+  return platform === 'MacIntel' && maxTouchPoints > 1 && /AppleWebKit/i.test(userAgent);
 }

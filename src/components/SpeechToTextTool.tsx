@@ -13,7 +13,7 @@ import {
   speechModelOptions,
 } from '@/tools/speech-to-text/models';
 import type { SpeechLanguage, SpeechModelOption } from '@/tools/speech-to-text/models';
-import { bindProcessorTokenizer, getOnnxRuntimeWasmPaths } from '@/tools/speech-to-text/runtime';
+import { bindProcessorTokenizer, getOnnxRuntimeWasmPaths, shouldReleaseSpeechRuntimeAfterTranscribe } from '@/tools/speech-to-text/runtime';
 import { copyTextToClipboard } from '@/tools/speech-to-text/clipboard';
 import { sttText } from '@/tools/speech-to-text/ui';
 import { normalizeVoskModelArchive } from '@/tools/speech-to-text/vosk-archive';
@@ -159,8 +159,11 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
   const recordingStreamRef = useRef<MediaStream | null>(null);
   const recordingChunksRef = useRef<BlobPart[]>([]);
   const runIdRef = useRef(0);
+  const releaseRuntimeAfterTranscribeRef = useRef(false);
 
   useEffect(() => {
+    const browserHints = getBrowserRuntimeHints();
+    releaseRuntimeAfterTranscribeRef.current = shouldReleaseSpeechRuntimeAfterTranscribe(browserHints);
     const hasGpu = typeof navigator !== 'undefined' && 'gpu' in navigator;
     setWebGpuAvailable(hasGpu);
     setBackend(hasGpu ? 'webgpu' : 'wasm');
@@ -318,6 +321,31 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
     if (!voskBlobUrlRef.current) return;
     URL.revokeObjectURL(voskBlobUrlRef.current);
     voskBlobUrlRef.current = null;
+  }
+
+  async function releaseLoadedRuntimeAfterTranscribe() {
+    if (!releaseRuntimeAfterTranscribeRef.current) return;
+
+    const currentTranscriber = transcriberRef.current;
+    transcriberRef.current = null;
+    loadingRef.current = null;
+    loadedModelIdRef.current = null;
+    await currentTranscriber?.dispose?.().catch(() => undefined);
+    setModelState('idle');
+    resetModelProgress();
+    setCacheState('downloaded');
+
+    try {
+      voskModelRef.current?.terminate();
+    } catch {
+    }
+    voskModelRef.current = null;
+    voskLoadingRef.current = null;
+    loadedVoskLanguageRef.current = null;
+    revokeVoskBlobUrl();
+    setVoskModelState('idle');
+    setVoskProgress(0);
+    setVoskCacheState((previous) => (previous === 'downloaded' ? 'downloaded' : previous));
   }
 
   async function deleteVoskModelCache(timelineModel: VoskTimelineModel) {
@@ -598,6 +626,7 @@ export default function SpeechToTextTool({ locale }: SpeechToTextToolProps) {
     } finally {
       URL.revokeObjectURL(url);
       if (runIdRef.current === currentRun) {
+        await releaseLoadedRuntimeAfterTranscribe();
         setTranscribing(false);
       }
     }
@@ -1554,11 +1583,7 @@ async function loadTranscriber(modelId: string, backend: Backend, onProgress: (i
   };
 
   const onnxWasm = onnxBackend.wasm ?? {};
-  onnxWasm.wasmPaths = getOnnxRuntimeWasmPaths(window.location.href, {
-    maxTouchPoints: navigator.maxTouchPoints,
-    platform: navigator.platform,
-    userAgent: navigator.userAgent,
-  });
+  onnxWasm.wasmPaths = getOnnxRuntimeWasmPaths(window.location.href, getBrowserRuntimeHints(), backend);
   onnxBackend.wasm = onnxWasm;
 
   env.allowRemoteModels = true;
@@ -1570,7 +1595,7 @@ async function loadTranscriber(modelId: string, backend: Backend, onProgress: (i
 
   const loaded = await pipeline('automatic-speech-recognition', modelId, {
     device: backend,
-    dtype: 'q8',
+    dtype: backend === 'wasm' ? 'fp32' : 'q8',
     progress_callback: onProgress,
   });
 
@@ -1642,6 +1667,14 @@ async function migrateLegacyVoskModelCache(timelineModel: VoskTimelineModel): Pr
 
 function getLegacySpeechModelUrl(model: SpeechModelOption, relativePath: string): string {
   return `https://huggingface.co/${model.modelId}/resolve/main/${relativePath}`;
+}
+
+function getBrowserRuntimeHints() {
+  return {
+    maxTouchPoints: navigator.maxTouchPoints,
+    platform: navigator.platform,
+    userAgent: navigator.userAgent,
+  };
 }
 
 async function recognizeVoskBuffer(model: VoskModel, audioBuffer: AudioBuffer, modelName: string): Promise<TimedTranscriptOutput> {
