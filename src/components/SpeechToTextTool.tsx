@@ -13,7 +13,7 @@ import {
   speechModelOptions,
 } from '@/tools/speech-to-text/models';
 import type { SpeechLanguage, SpeechModelOption } from '@/tools/speech-to-text/models';
-import { bindProcessorTokenizer } from '@/tools/speech-to-text/runtime';
+import { bindProcessorTokenizer, getOnnxRuntimeWasmPaths } from '@/tools/speech-to-text/runtime';
 import { copyTextToClipboard } from '@/tools/speech-to-text/clipboard';
 import { sttText } from '@/tools/speech-to-text/ui';
 import { normalizeVoskModelArchive } from '@/tools/speech-to-text/vosk-archive';
@@ -1543,9 +1543,6 @@ async function createProgressStreamer(
 
 async function loadTranscriber(modelId: string, backend: Backend, onProgress: (info: ProgressInfo) => void): Promise<Transcriber> {
   const { pipeline, env } = await import('@huggingface/transformers');
-  // Transformers imports onnxruntime-web/webgpu, whose wasm factory exposes webgpuInit.
-  const wasmFactoryUrl = new URL('/vendor/onnxruntime/ort-wasm-simd-threaded.asyncify.mjs', window.location.href).href;
-  const wasmBinaryUrl = new URL('/vendor/onnxruntime/ort-wasm-simd-threaded.asyncify.wasm', window.location.href).href;
 
   const onnxBackend = env.backends.onnx as {
     wasm?: {
@@ -1557,10 +1554,11 @@ async function loadTranscriber(modelId: string, backend: Backend, onProgress: (i
   };
 
   const onnxWasm = onnxBackend.wasm ?? {};
-  onnxWasm.wasmPaths = {
-    mjs: wasmFactoryUrl,
-    wasm: wasmBinaryUrl,
-  };
+  onnxWasm.wasmPaths = getOnnxRuntimeWasmPaths(window.location.href, {
+    maxTouchPoints: navigator.maxTouchPoints,
+    platform: navigator.platform,
+    userAgent: navigator.userAgent,
+  });
   onnxBackend.wasm = onnxWasm;
 
   env.allowRemoteModels = true;
