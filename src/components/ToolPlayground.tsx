@@ -16,9 +16,18 @@ type ToolPlaygroundProps = {
 type FormValue = string | number | boolean | File | null;
 type FormValues = Record<string, FormValue>;
 const SpeechToTextTool = lazy(() => import('./SpeechToTextTool'));
+const Base64CodecTool = lazy(() => import('./Base64CodecTool'));
 const FAVORITE_RESULTS_ENTRY_ID = 'favorite-results';
 
 export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
+  if (slug === 'base64-codec') {
+    return (
+      <Suspense fallback={<div className="panel muted-panel">{t(locale, 'toolLoading')}</div>}>
+        <Base64CodecTool locale={locale} />
+      </Suspense>
+    );
+  }
+
   if (slug === 'speech-to-text') {
     return (
       <Suspense fallback={<div className="panel muted-panel">{t(locale, 'toolLoading')}</div>}>
