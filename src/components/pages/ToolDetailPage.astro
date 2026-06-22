@@ -5,6 +5,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { type Locale } from '@/i18n/config';
 import { t } from '@/i18n/ui';
 import { localize } from '@/i18n/utils';
+import { getToolManifestHref } from '@/lib/pwa/manifest';
 import { getCategoryLabel } from '@/tools/registry';
 import type { ToolManifest } from '@/tools/_types';
 
@@ -17,7 +18,14 @@ const toolName = localize(tool.i18n.name, locale);
 const toolDescription = localize(tool.i18n.description, locale);
 ---
 
-<BaseLayout locale={locale} path={`/tools/${tool.slug}`} title={toolName} description={toolDescription}>
+<BaseLayout
+  locale={locale}
+  path={`/tools/${tool.slug}`}
+  title={toolName}
+  description={toolDescription}
+  manifestHref={getToolManifestHref(locale, tool.slug)}
+  appName={toolName}
+>
   <article class="tool-detail">
     <header class="page-heading">
       <div class="tool-card-meta inline-meta">

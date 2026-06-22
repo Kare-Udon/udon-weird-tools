@@ -3,6 +3,15 @@
     "date": "2026-06-22",
     "items": [
       {
+        "id": "2026-06-22-pending-a06bbe3e1f",
+        "commitSubject": "Add PWA install manifests",
+        "summary": {
+          "en": "Added PWA install manifests and app icons for the site and individual tools.",
+          "ja": "サイトと各ツールにPWAインストール用マニフェストとアプリアイコンを追加しました。",
+          "zh-CN": "为站点和各个工具添加了 PWA 安装清单和应用图标。"
+        }
+      },
+      {
         "id": "2026-06-22-x-photo-upload-preprocessor",
         "commitSubject": "Add X photo upload preprocessor",
         "summary": {

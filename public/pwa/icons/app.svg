@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Udon Toolbox</title>
+  <desc id="desc">A rounded toolbox icon with the letters UT.</desc>
+  <rect width="512" height="512" rx="112" fill="#111827" />
+  <circle cx="388" cy="124" r="52" fill="#f8fafc" opacity="0.14" />
+  <circle cx="124" cy="388" r="72" fill="#f8fafc" opacity="0.1" />
+  <path
+    d="M146 170v117c0 56 35 88 89 88 53 0 88-32 88-88V170h-54v116c0 27-13 41-34 41-22 0-35-14-35-41V170h-54Z"
+    fill="#f8fafc"
+  />
+  <path d="M320 170h124v49h-35v154h-54V219h-35v-49Z" fill="#f8fafc" />
+</svg>

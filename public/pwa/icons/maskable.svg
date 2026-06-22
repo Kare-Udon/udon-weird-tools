@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Udon Toolbox Maskable Icon</title>
+  <desc id="desc">A maskable toolbox icon with generous safe area.</desc>
+  <rect width="512" height="512" fill="#111827" />
+  <circle cx="384" cy="128" r="56" fill="#f8fafc" opacity="0.14" />
+  <circle cx="132" cy="380" r="76" fill="#f8fafc" opacity="0.1" />
+  <rect x="96" y="96" width="320" height="320" rx="88" fill="#111827" />
+  <path
+    d="M147 174v112c0 54 34 85 86 85s86-31 86-85V174h-52v111c0 26-13 39-34 39s-34-13-34-39V174h-52Z"
+    fill="#f8fafc"
+  />
+  <path d="M317 174h118v47h-33v148h-52V221h-33v-47Z" fill="#f8fafc" />
+</svg>

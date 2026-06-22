@@ -2,17 +2,36 @@
 import SiteHeader from '@/components/SiteHeader.astro';
 import { type Locale } from '@/i18n/config';
 import { t } from '@/i18n/ui';
+import {
+  getSiteManifestHref,
+  pwaIconHref,
+  pwaMaskableIconHref,
+  pwaThemeColor,
+} from '@/lib/pwa/manifest';
 import '@/styles/global.css';
 
-const { locale, title, description, path = '/' } = Astro.props as {
+const {
+  locale,
+  title,
+  description,
+  path = '/',
+  manifestHref: providedManifestHref,
+  appName: providedAppName,
+  themeColor = pwaThemeColor,
+} = Astro.props as {
   locale: Locale;
   title?: string;
   description?: string;
   path?: string;
+  manifestHref?: string;
+  appName?: string;
+  themeColor?: string;
 };
 
 const pageTitle = title ? `${title} · ${t(locale, 'siteTitle')}` : t(locale, 'siteTitle');
 const pageDescription = description ?? t(locale, 'siteDescription');
+const manifestHref = providedManifestHref ?? getSiteManifestHref(locale);
+const appName = providedAppName ?? t(locale, 'siteTitle');
 ---
 
 <!doctype html>
@@ -21,6 +40,15 @@ const pageDescription = description ?? t(locale, 'siteDescription');
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={pageDescription} />
+    <meta name="theme-color" content={themeColor} />
+    <meta name="application-name" content={appName} />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content={appName} />
+    <link rel="manifest" href={manifestHref} />
+    <link rel="icon" type="image/svg+xml" href={pwaIconHref} />
+    <link rel="apple-touch-icon" href={pwaIconHref} />
+    <link rel="mask-icon" href={pwaMaskableIconHref} color={themeColor} />
     <title>{pageTitle}</title>
   </head>
   <body>
