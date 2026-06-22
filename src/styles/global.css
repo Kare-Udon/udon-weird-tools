@@ -973,6 +973,203 @@ textarea {
   width: fit-content;
 }
 
+.x-photo-tool {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1rem, 3vw, 1.35rem);
+  align-items: start;
+}
+
+.x-photo-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.x-photo-heading {
+  margin-bottom: 0;
+}
+
+.x-photo-drop-zone {
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  padding: clamp(1rem, 4vw, 1.5rem);
+  background: color-mix(in srgb, var(--surface) 90%, var(--accent-soft));
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.x-photo-drop-zone--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.x-photo-drop-content {
+  display: grid;
+  justify-items: start;
+  gap: 0.7rem;
+  color: var(--muted-strong);
+  line-height: 1.6;
+}
+
+.x-photo-drop-content strong {
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.x-photo-drop-content span {
+  color: var(--muted);
+}
+
+.x-photo-selected-file {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.8rem 0.9rem;
+  background: var(--surface-soft);
+}
+
+.x-photo-selected-file div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.x-photo-selected-file span {
+  color: var(--muted);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.x-photo-advanced {
+  border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  border-radius: 8px;
+  padding: 0.85rem 0.95rem;
+  background: var(--surface-soft);
+}
+
+.x-photo-advanced summary {
+  cursor: pointer;
+  color: var(--muted-strong);
+  font-weight: 650;
+  user-select: none;
+}
+
+.x-photo-advanced p,
+.x-photo-privacy-note {
+  margin: 0.7rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.x-photo-options-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.x-photo-option-row,
+.x-photo-switch-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(9rem, 0.42fr);
+  align-items: center;
+  gap: 0.85rem;
+  color: var(--muted-strong);
+}
+
+.x-photo-option-row input,
+.x-photo-option-row select {
+  min-height: 2.35rem;
+  padding-block: 0.5rem;
+}
+
+.x-photo-option-row input[type='color'] {
+  min-height: 2.35rem;
+  padding: 0.25rem;
+}
+
+.x-photo-switch-row input[type='checkbox'] {
+  justify-self: end;
+}
+
+.x-photo-advanced-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+}
+
+.x-photo-output-state {
+  min-height: 260px;
+}
+
+.x-photo-progress-state {
+  display: grid;
+  align-content: center;
+  gap: 0.75rem;
+  color: var(--muted-strong);
+}
+
+.x-photo-progress-state strong {
+  color: var(--text);
+}
+
+.x-photo-progress-track {
+  overflow: hidden;
+  inline-size: 100%;
+  block-size: 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+.x-photo-progress-track span {
+  display: block;
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: inline-size 180ms ease;
+}
+
+.x-photo-result {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.x-photo-result-status,
+.x-photo-summary-grid {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--surface) 92%, var(--accent-soft));
+}
+
+.x-photo-result-status {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.x-photo-result-status span {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.x-photo-summary-grid {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.35fr) minmax(0, 1fr);
+  gap: 0.65rem 1rem;
+  align-items: baseline;
+}
+
+.x-photo-summary-grid span {
+  color: var(--muted);
+}
+
+.x-photo-summary-grid strong {
+  overflow-wrap: anywhere;
+}
+
 .download-warning-list {
   border-color: rgba(159, 18, 57, 0.18);
   background: var(--danger-bg);
@@ -2494,7 +2691,8 @@ textarea {
     grid-template-columns: 1fr;
   }
 
-  .base64-codec {
+  .base64-codec,
+  .x-photo-tool {
     grid-template-columns: 1fr;
   }
 
@@ -2659,11 +2857,22 @@ textarea {
 
   .base64-option-row,
   .base64-switch-row,
-  .base64-status-strip {
+  .base64-status-strip,
+  .x-photo-option-row,
+  .x-photo-summary-grid {
     grid-template-columns: 1fr;
   }
 
-  .base64-switch-row {
+  .base64-switch-row,
+  .x-photo-switch-row {
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .x-photo-drop-content {
+    justify-items: stretch;
+  }
+
+  .x-photo-drop-content button {
+    width: 100%;
   }
 }

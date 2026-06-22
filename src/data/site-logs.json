@@ -1,5 +1,19 @@
 [
   {
+    "date": "2026-06-22",
+    "items": [
+      {
+        "id": "2026-06-22-x-photo-upload-preprocessor",
+        "commitSubject": "Add X photo upload preprocessor",
+        "summary": {
+          "en": "Added a browser-only X photo upload preprocessor with local JPEG sizing controls and a restartable test-server helper.",
+          "ja": "ローカル JPEG サイズ調整に対応したブラウザ内 X 写真アップロード前処理ツールと、再起動できるテストサーバーヘルパーを追加しました。",
+          "zh-CN": "新增浏览器端 X 照片上传前处理工具，支持本地 JPEG 尺寸控制，并加入可重启的测试服务脚本。"
+        }
+      }
+    ]
+  },
+  {
     "date": "2026-05-15",
     "items": [
       {

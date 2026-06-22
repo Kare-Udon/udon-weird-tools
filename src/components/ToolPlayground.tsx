@@ -17,6 +17,7 @@ type FormValue = string | number | boolean | File | null;
 type FormValues = Record<string, FormValue>;
 const SpeechToTextTool = lazy(() => import('./SpeechToTextTool'));
 const Base64CodecTool = lazy(() => import('./Base64CodecTool'));
+const XPhotoUploadPreprocessorTool = lazy(() => import('./XPhotoUploadPreprocessorTool'));
 const FAVORITE_RESULTS_ENTRY_ID = 'favorite-results';
 
 export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
@@ -32,6 +33,14 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
     return (
       <Suspense fallback={<div className="panel muted-panel">{t(locale, 'toolLoading')}</div>}>
         <SpeechToTextTool locale={locale} />
+      </Suspense>
+    );
+  }
+
+  if (slug === 'x-photo-upload-preprocessor') {
+    return (
+      <Suspense fallback={<div className="panel muted-panel">{t(locale, 'toolLoading')}</div>}>
+        <XPhotoUploadPreprocessorTool locale={locale} />
       </Suspense>
     );
   }

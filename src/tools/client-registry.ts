@@ -11,6 +11,7 @@ export const clientToolLoaders = {
   'speech-to-text': async () => (await import('./speech-to-text')).default as LoadedToolModule,
   'storage-manager': async () => (await import('./storage-manager')).default as LoadedToolModule,
   'vrc-photo-metadata': async () => (await import('./vrc-photo-metadata')).default as LoadedToolModule,
+  'x-photo-upload-preprocessor': async () => (await import('./x-photo-upload-preprocessor')).default as LoadedToolModule,
   'unitypackage-extractor': async () => (await import('./unitypackage-extractor')).default as LoadedToolModule,
 } satisfies Record<string, () => Promise<LoadedToolModule>>;
 

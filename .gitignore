@@ -2,6 +2,7 @@ node_modules/
 dist/
 .astro/
 .worktrees/
+.dev-runtime/
 design/
 .vercel/
 .netlify/

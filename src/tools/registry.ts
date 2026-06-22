@@ -11,8 +11,20 @@ import { manifest as timestampConverter } from './timestamp-converter/manifest';
 import { manifest as unicodeFancyText } from './unicode-fancy-text/manifest';
 import { manifest as unitypackageExtractor } from './unitypackage-extractor/manifest';
 import { manifest as vrcPhotoMetadata } from './vrc-photo-metadata/manifest';
+import { manifest as xPhotoUploadPreprocessor } from './x-photo-upload-preprocessor/manifest';
 
-export const tools = [jsonCleaner, base64Codec, timestampConverter, caseConverter, unicodeFancyText, speechToText, storageManager, vrcPhotoMetadata, unitypackageExtractor] as const satisfies readonly ToolManifest[];
+export const tools = [
+  jsonCleaner,
+  base64Codec,
+  timestampConverter,
+  caseConverter,
+  unicodeFancyText,
+  speechToText,
+  storageManager,
+  vrcPhotoMetadata,
+  xPhotoUploadPreprocessor,
+  unitypackageExtractor,
+] as const satisfies readonly ToolManifest[];
 
 export type ToolSlug = (typeof tools)[number]['slug'];
 
