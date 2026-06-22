@@ -13,6 +13,11 @@ export const xPhotoUi = {
     en: 'Use Save Image when automatic download is off.',
     ja: '自動ダウンロードがオフの場合は「画像を保存」を使います。',
   },
+  outputNoteMobileManual: {
+    'zh-CN': '移动端请处理完成后手动保存图片。',
+    en: 'On mobile, use Save Image after processing.',
+    ja: 'モバイルでは処理後に「画像を保存」を使います。',
+  },
   selectPhoto: {
     'zh-CN': '选择照片',
     en: 'Choose photo',
@@ -93,6 +98,11 @@ export const xPhotoUi = {
     en: 'Download automatically after processing',
     ja: '処理後に自動ダウンロード',
   },
+  mobileManualSaveNote: {
+    'zh-CN': '移动端浏览器需要用户点击保存，不能自动写入相册。',
+    en: 'Mobile browsers require a tap to save; pages cannot write to the photo library automatically.',
+    ja: 'モバイルブラウザでは保存にタップ操作が必要で、ページから写真ライブラリへ自動保存はできません。',
+  },
   backgroundColor: {
     'zh-CN': '透明区域底色',
     en: 'Transparent area background',
@@ -117,6 +127,11 @@ export const xPhotoUi = {
     'zh-CN': '选择一张照片后会自动处理；完成后请使用保存图片。',
     en: 'Choose a photo to process, then use Save Image.',
     ja: '写真を選択して処理し、完了後に「画像を保存」を使います。',
+  },
+  waitingMobileManual: {
+    'zh-CN': '选择一张照片后会自动处理；移动端请完成后手动保存图片。',
+    en: 'Choose a photo to process, then save it manually on mobile.',
+    ja: '写真を選択して処理し、モバイルでは完了後に手動で保存します。',
   },
   processing: {
     'zh-CN': '正在处理照片…',

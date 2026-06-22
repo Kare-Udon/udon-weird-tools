@@ -37,6 +37,7 @@ const PHASE_LABEL_KEYS = {
 export default function XPhotoUploadPreprocessorTool({ locale }: XPhotoUploadPreprocessorToolProps) {
   const [settings, setSettings] = useState<XPhotoProcessingSettings>(X_PHOTO_DEFAULT_SETTINGS);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [manualSaveOnly, setManualSaveOnly] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [result, setResult] = useState<DownloadableResult | null>(null);
   const [objectUrl, setObjectUrl] = useState('');
@@ -62,6 +63,23 @@ export default function XPhotoUploadPreprocessorTool({ locale }: XPhotoUploadPre
   }, []);
 
   useEffect(() => {
+    const updateManualSaveMode = () => setManualSaveOnly(shouldUseManualSaveOnly());
+    const compactViewportQuery = window.matchMedia('(max-width: 767px)');
+    const coarsePointerQuery = window.matchMedia('(pointer: coarse)');
+
+    updateManualSaveMode();
+    compactViewportQuery.addEventListener('change', updateManualSaveMode);
+    coarsePointerQuery.addEventListener('change', updateManualSaveMode);
+    window.addEventListener('resize', updateManualSaveMode);
+
+    return () => {
+      compactViewportQuery.removeEventListener('change', updateManualSaveMode);
+      coarsePointerQuery.removeEventListener('change', updateManualSaveMode);
+      window.removeEventListener('resize', updateManualSaveMode);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!settingsLoaded) return;
     window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
   }, [settings, settingsLoaded]);
@@ -81,16 +99,17 @@ export default function XPhotoUploadPreprocessorTool({ locale }: XPhotoUploadPre
   }, [result]);
 
   useEffect(() => {
-    if (!result || !objectUrl || !settings.autoDownload) return;
+    if (!result || !objectUrl || !settings.autoDownload || manualSaveOnly) return;
     if (autoDownloadedResultIdRef.current === result.id) return;
 
     autoDownloadedResultIdRef.current = result.id;
     triggerDownload(objectUrl, result.fileName);
-  }, [objectUrl, result, settings.autoDownload]);
+  }, [manualSaveOnly, objectUrl, result, settings.autoDownload]);
 
   const copy = (key: keyof typeof xPhotoUi) => localize(xPhotoUi[key], locale);
-  const outputNoteKey = settings.autoDownload ? 'outputNoteAuto' : 'outputNoteManual';
-  const waitingKey = settings.autoDownload ? 'waitingAuto' : 'waitingManual';
+  const autoDownloadEnabled = settings.autoDownload && !manualSaveOnly;
+  const outputNoteKey = manualSaveOnly ? 'outputNoteMobileManual' : autoDownloadEnabled ? 'outputNoteAuto' : 'outputNoteManual';
+  const waitingKey = manualSaveOnly ? 'waitingMobileManual' : autoDownloadEnabled ? 'waitingAuto' : 'waitingManual';
   const progressPercent = Math.max(0, Math.min(100, Math.round((progress?.progress ?? 0) * 100)));
   const progressLabel = progress ? copy(PHASE_LABEL_KEYS[progress.phase]) : copy('processing');
 
@@ -281,8 +300,14 @@ export default function XPhotoUploadPreprocessorTool({ locale }: XPhotoUploadPre
 
             <label className="x-photo-switch-row">
               <span>{copy('autoDownload')}</span>
-              <input type="checkbox" checked={settings.autoDownload} onChange={(event) => updateSettings({ autoDownload: event.currentTarget.checked })} />
+              <input
+                type="checkbox"
+                checked={autoDownloadEnabled}
+                disabled={manualSaveOnly}
+                onChange={(event) => updateSettings({ autoDownload: event.currentTarget.checked })}
+              />
             </label>
+            {manualSaveOnly && <p className="x-photo-inline-note">{copy('mobileManualSaveNote')}</p>}
           </div>
           <div className="x-photo-advanced-actions">
             <button type="button" onClick={resetSettings} disabled={processing}>
@@ -378,4 +403,15 @@ function triggerDownload(url: string, fileName: string): void {
   anchor.download = fileName;
   anchor.rel = 'noopener';
   anchor.click();
+}
+
+function shouldUseManualSaveOnly(): boolean {
+  const userAgentData = (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData;
+  if (userAgentData?.mobile) return true;
+
+  if (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) return true;
+
+  const compactViewport = window.matchMedia('(max-width: 767px)').matches;
+  const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+  return compactViewport || (coarsePointer && navigator.maxTouchPoints > 0);
 }

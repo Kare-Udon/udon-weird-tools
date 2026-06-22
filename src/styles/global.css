@@ -1093,6 +1093,14 @@ textarea {
   justify-self: end;
 }
 
+.x-photo-inline-note {
+  grid-column: 1 / -1;
+  margin: -0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
 .x-photo-advanced-actions {
   display: flex;
   justify-content: flex-end;
