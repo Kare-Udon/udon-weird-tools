@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { type Locale } from '@/i18n/config';
 import { t } from '@/i18n/ui';
 import { localize } from '@/i18n/utils';
-import { copyTextToClipboard } from '@/lib/clipboard';
+import { copyTextToClipboard, readTextFromClipboard } from '@/lib/clipboard';
 import { toolLocalStorageKey } from '@/lib/local/storage-contract';
 import { base64Ui } from '@/tools/base64-codec/ui';
 import { run, type Base64CodecInput, type Base64CodecOutput } from '@/tools/base64-codec/run';
@@ -25,6 +25,7 @@ export default function Base64CodecTool({ locale }: Base64CodecToolProps) {
   const [output, setOutput] = useState<Base64CodecOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const [clipboardState, setClipboardState] = useState<'idle' | 'loaded' | 'failed'>('idle');
 
   useEffect(() => {
     const storedMode = window.localStorage.getItem(MODE_STORAGE_KEY);
@@ -67,6 +68,7 @@ export default function Base64CodecTool({ locale }: Base64CodecToolProps) {
   }, [input]);
 
   function updateInput(patch: Partial<Base64CodecInput>) {
+    setClipboardState('idle');
     setInput((current) => ({ ...current, ...patch }));
   }
 
@@ -75,6 +77,19 @@ export default function Base64CodecTool({ locale }: Base64CodecToolProps) {
     setOutput(null);
     setError(null);
     setCopyState('idle');
+    setClipboardState('idle');
+  }
+
+  async function handleReadClipboard() {
+    const text = await readTextFromClipboard();
+
+    if (text === null) {
+      setClipboardState('failed');
+      return;
+    }
+
+    setInput((current) => ({ ...current, text }));
+    setClipboardState('loaded');
   }
 
   async function handleCopy() {
@@ -96,6 +111,13 @@ export default function Base64CodecTool({ locale }: Base64CodecToolProps) {
             <span>
               {inputBytes} {localize(base64Ui.bytes, locale)}
             </span>
+            <button type="button" onClick={() => void handleReadClipboard()}>
+              {clipboardState === 'loaded'
+                ? localize(base64Ui.clipboardLoaded, locale)
+                : clipboardState === 'failed'
+                  ? localize(base64Ui.clipboardReadFailed, locale)
+                  : localize(base64Ui.readClipboard, locale)}
+            </button>
             <button type="button" onClick={handleReset}>
               {t(locale, 'toolReset')}
             </button>

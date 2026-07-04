@@ -1,4 +1,5 @@
 const CLIPBOARD_WRITE_TIMEOUT_MS = 750;
+const CLIPBOARD_READ_TIMEOUT_MS = 750;
 
 export async function copyTextToClipboard(text: string): Promise<boolean> {
   if (!text) return false;
@@ -14,6 +15,27 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
   }
 
   return false;
+}
+
+export async function readTextFromClipboard(): Promise<string | null> {
+  if (typeof navigator === 'undefined' || typeof navigator.clipboard?.readText !== 'function') {
+    return null;
+  }
+
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  try {
+    return await Promise.race([
+      navigator.clipboard.readText(),
+      new Promise<never>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error('Clipboard read timed out.')), CLIPBOARD_READ_TIMEOUT_MS);
+      }),
+    ]);
+  } catch {
+    return null;
+  } finally {
+    if (timeout !== null) clearTimeout(timeout);
+  }
 }
 
 function copyWithTextarea(text: string): boolean {

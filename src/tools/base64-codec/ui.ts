@@ -26,6 +26,21 @@ export const base64Ui = {
     en: 'Paste Base64 to decode…',
     ja: 'デコードする Base64 を貼り付け...',
   },
+  readClipboard: {
+    'zh-CN': '读取剪贴板',
+    en: 'Read clipboard',
+    ja: 'クリップボードを読む',
+  },
+  clipboardLoaded: {
+    'zh-CN': '已读取',
+    en: 'Loaded',
+    ja: '読み取り済み',
+  },
+  clipboardReadFailed: {
+    'zh-CN': '读取失败',
+    en: 'Read failed',
+    ja: '読み取り失敗',
+  },
   options: {
     'zh-CN': '选项',
     en: 'Options',

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
-import { copyTextToClipboard } from './clipboard.ts';
+import * as clipboard from './clipboard.ts';
 
 const originalDocument = globalThis.document;
 const originalNavigator = globalThis.navigator;
@@ -45,7 +45,7 @@ test('copies exact text with textarea fallback before using Clipboard API', asyn
     },
   });
 
-  const copied = await copyTextToClipboard('aGVsbG8=\\n');
+  const copied = await clipboard.copyTextToClipboard('aGVsbG8=\\n');
 
   assert.equal(copied, true);
   assert.equal(copiedValue, 'aGVsbG8=\\n');
@@ -82,7 +82,7 @@ test('falls back to Clipboard API when textarea copy fails', async () => {
     },
   });
 
-  const copied = await copyTextToClipboard('aGVsbG8=');
+  const copied = await clipboard.copyTextToClipboard('aGVsbG8=');
 
   assert.equal(copied, true);
   assert.equal(copiedValue, 'aGVsbG8=');
@@ -92,7 +92,40 @@ test('reports failure when no copy mechanism works', async () => {
   setGlobal('document', undefined);
   setGlobal('navigator', {});
 
-  assert.equal(await copyTextToClipboard('aGVsbG8='), false);
+  assert.equal(await clipboard.copyTextToClipboard('aGVsbG8='), false);
+});
+
+test('reads exact text from Clipboard API', async () => {
+  setGlobal('navigator', {
+    clipboard: {
+      async readText() {
+        return 'aGVsbG8=\\n';
+      },
+    },
+  });
+
+  assert.equal(typeof clipboard.readTextFromClipboard, 'function');
+  assert.equal(await clipboard.readTextFromClipboard(), 'aGVsbG8=\\n');
+});
+
+test('reports null when clipboard read is unavailable', async () => {
+  setGlobal('navigator', {});
+
+  assert.equal(typeof clipboard.readTextFromClipboard, 'function');
+  assert.equal(await clipboard.readTextFromClipboard(), null);
+});
+
+test('reports null when Clipboard API read fails', async () => {
+  setGlobal('navigator', {
+    clipboard: {
+      async readText() {
+        throw new Error('NotAllowedError');
+      },
+    },
+  });
+
+  assert.equal(typeof clipboard.readTextFromClipboard, 'function');
+  assert.equal(await clipboard.readTextFromClipboard(), null);
 });
 
 function setGlobal(key, value) {
