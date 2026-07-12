@@ -7,6 +7,7 @@ export const clientToolLoaders = {
   'base64-codec': async () => (await import('./base64-codec')).default as LoadedToolModule,
   'timestamp-converter': async () => (await import('./timestamp-converter')).default as LoadedToolModule,
   'case-converter': async () => (await import('./case-converter')).default as LoadedToolModule,
+  'codex-session-analyzer': async () => (await import('./codex-session-analyzer')).default as LoadedToolModule,
   'unicode-fancy-text': async () => (await import('./unicode-fancy-text')).default as LoadedToolModule,
   'speech-to-text': async () => (await import('./speech-to-text')).default as LoadedToolModule,
   'storage-manager': async () => (await import('./storage-manager')).default as LoadedToolModule,

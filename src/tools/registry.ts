@@ -4,6 +4,7 @@ import type { ToolCategory, ToolManifest } from './_types';
 
 import { manifest as base64Codec } from './base64-codec/manifest';
 import { manifest as caseConverter } from './case-converter/manifest';
+import { manifest as codexSessionAnalyzer } from './codex-session-analyzer/manifest';
 import { manifest as jsonCleaner } from './json-cleaner/manifest';
 import { manifest as speechToText } from './speech-to-text/manifest';
 import { manifest as storageManager } from './storage-manager/manifest';
@@ -20,6 +21,7 @@ export const tools = [
   caseConverter,
   unicodeFancyText,
   speechToText,
+  codexSessionAnalyzer,
   storageManager,
   vrcPhotoMetadata,
   xPhotoUploadPreprocessor,
