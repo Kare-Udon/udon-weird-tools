@@ -4,6 +4,7 @@ import { localize } from '@/i18n/utils';
 import { toolLocalStorageKey } from '@/lib/local/storage-contract';
 import {
   CODEX_ANALYZER_TOOL_SLUG,
+  CODEX_PRICING_SNAPSHOT,
   analyzeCodexRollouts,
   createCodexAnalysisFromSessions,
   type CodexAnalysisResult,
@@ -13,6 +14,7 @@ import {
   type ProjectAnalysis,
   type SessionAnalysis,
   type SessionStatus,
+  type TokenCostEstimate,
   type TokenUsage,
   type ToolStats,
   type TurnAnalysis,
@@ -329,6 +331,24 @@ export default function CodexSessionAnalyzerTool({ locale }: CodexSessionAnalyze
             <span className="codex-eyebrow">{copy('sourceTitle')}</span>
             <strong>{sources?.folderName ?? copy('noFolder')}</strong>
             <p>{copy('sourceHint')}</p>
+            <div className="codex-pricing-note">
+              <span className="codex-eyebrow">{copy('pricingTitle')}</span>
+              <p>{copy('pricingHint')}</p>
+              <details>
+                <summary>{copy('pricingDetails')}</summary>
+                <p>{copy('pricingLimitations')}</p>
+              </details>
+              <small>
+                {copy('pricingFetchedAt')}: <time dateTime={CODEX_PRICING_SNAPSHOT.fetchedAt}>{CODEX_PRICING_SNAPSHOT.fetchedAt}</time> ·{' '}
+                <a href={CODEX_PRICING_SNAPSHOT.sourceUrl} target="_blank" rel="noreferrer">
+                  {copy('pricingSource')}
+                </a>{' '}
+                ·{' '}
+                <a href={CODEX_PRICING_SNAPSHOT.modelDirectoryUrl} target="_blank" rel="noreferrer">
+                  {copy('pricingModelDirectory')}
+                </a>
+              </small>
+            </div>
           </div>
           <div className="codex-source-actions">
             <button type="button" className="primary" onClick={() => void chooseFolder()} disabled={scanning}>
@@ -534,7 +554,7 @@ function OverviewDashboard({
       <MetricGrid
         metrics={[
           { label: copy('projects'), value: formatInteger(totals.projectCount, locale), detail: `${totals.sessionCount} ${copy('sessions')}` },
-          { label: copy('totalTokens'), value: formatCompact(totals.usage.totalTokens, locale), detail: tokenComposition(totals.usage, locale, copy) },
+          { label: copy('totalTokens'), value: formatTokenMetric(totals.usage, totals.cost, locale, copy), detail: tokenComposition(totals.usage, totals.cost, locale, copy) },
           { label: copy('requests'), value: formatInteger(totals.requestCount, locale), detail: `${totals.turnCount} ${copy('turns')}` },
           { label: copy('toolCalls'), value: formatInteger(totals.toolCallCount, locale), detail: `${totals.toolFailureCount} ${copy('failures')}` },
           { label: copy('activeTime'), value: formatDuration(totals.activeDurationMs), detail: `${copy('averageRequest')} ${formatDuration(averageModelDuration(analysis.modelStats))}` },
@@ -544,7 +564,7 @@ function OverviewDashboard({
 
       <div className="codex-dashboard-grid codex-dashboard-grid--wide-left">
         <DashboardPanel title={copy('activity')}>
-          <DailyActivityChart data={analysis.dailyStats} locale={locale} />
+          <DailyActivityChart data={analysis.dailyStats} locale={locale} copy={copy} />
         </DashboardPanel>
         <DashboardPanel title={copy('toolUsage')}>
           <ToolUsageChart stats={analysis.toolStats} locale={locale} />
@@ -594,7 +614,7 @@ function ProjectDashboard({
       <MetricGrid
         metrics={[
           { label: copy('sessions'), value: formatInteger(project.totals.sessionCount, locale), detail: formatDateTime(project.updatedAt, locale) },
-          { label: copy('totalTokens'), value: formatCompact(project.totals.usage.totalTokens, locale), detail: tokenComposition(project.totals.usage, locale, copy) },
+          { label: copy('totalTokens'), value: formatTokenMetric(project.totals.usage, project.totals.cost, locale, copy), detail: tokenComposition(project.totals.usage, project.totals.cost, locale, copy) },
           { label: copy('requests'), value: formatInteger(project.totals.requestCount, locale), detail: `${project.totals.turnCount} ${copy('turns')}` },
           { label: copy('toolCalls'), value: formatInteger(project.totals.toolCallCount, locale), detail: `${project.totals.toolFailureCount} ${copy('failures')}` },
           { label: copy('activeTime'), value: formatDuration(project.totals.activeDurationMs), detail: `${copy('averageTtft')} ${formatDuration(project.totals.averageTimeToFirstTokenMs)}` },
@@ -638,7 +658,7 @@ function SessionDashboard({ session, locale, copy }: { session: SessionAnalysis;
 
       <MetricGrid
         metrics={[
-          { label: copy('totalTokens'), value: formatCompact(session.usage.totalTokens, locale), detail: tokenComposition(session.usage, locale, copy) },
+          { label: copy('totalTokens'), value: formatTokenMetric(session.usage, session.cost, locale, copy), detail: tokenComposition(session.usage, session.cost, locale, copy) },
           { label: copy('turns'), value: formatInteger(session.turns.length, locale), detail: `${session.requestCount} ${copy('requests')}` },
           { label: copy('toolCalls'), value: formatInteger(session.toolCallCount, locale), detail: `${session.toolFailureCount} ${copy('failures')}` },
           { label: copy('activeTime'), value: formatDuration(session.activeDurationMs), detail: formatDateTime(session.updatedAt, locale) },
@@ -669,7 +689,7 @@ function TurnCard({ turn, locale, copy }: { turn: TurnAnalysis; locale: Locale; 
           <StatusBadge status={turn.status} copy={copy} />
         </div>
         <div className="codex-turn-summary-metrics">
-          <span>{formatCompact(turn.usage.totalTokens, locale)} {copy('tokens')}</span>
+          <span>{formatTokenMetric(turn.usage, turn.cost, locale, copy)}</span>
           <span>{turn.requests.length} {copy('requests')}</span>
           <span>{turn.tools.length} {copy('tools')}</span>
           <span>{formatDuration(turn.durationMs)}</span>
@@ -699,7 +719,7 @@ function TurnCard({ turn, locale, copy }: { turn: TurnAnalysis; locale: Locale; 
                   </div>
                   <div className="codex-request-stats">
                     <span title={`${copy('duration')} · ${copy('estimated')}`}>≈ {formatDuration(request.generationDurationMs)}</span>
-                    <span>{formatCompact(request.usage.totalTokens, locale)} tok</span>
+                    <span>{formatTokenMetric(request.usage, request.cost, locale, copy)}</span>
                     <span>{formatSpeed(request.outputTokensPerSecond)}</span>
                   </div>
                 </div>
@@ -748,16 +768,16 @@ function DashboardPanel({ title, children, compact = false }: { title: string; c
   );
 }
 
-function DailyActivityChart({ data, locale }: { data: DailyStats[]; locale: Locale }) {
+function DailyActivityChart({ data, locale, copy }: { data: DailyStats[]; locale: Locale; copy: CopyFunction }) {
   const maxTokens = Math.max(1, ...data.map((day) => day.usage.totalTokens));
   return (
     <div className="codex-activity-chart">
       {data.map((day) => (
-        <div className="codex-activity-day" key={day.date} title={`${formatDate(day.date, locale)} · ${formatInteger(day.usage.totalTokens, locale)} tokens`}>
+        <div className="codex-activity-day" key={day.date} title={`${formatDate(day.date, locale)} · ${formatTokenMetric(day.usage, day.cost, locale, copy)}`}>
           <div className="codex-activity-bar">
             <span style={{ blockSize: `${Math.max(day.usage.totalTokens > 0 ? 5 : 0, (day.usage.totalTokens / maxTokens) * 100)}%` }} />
           </div>
-          <strong>{formatCompact(day.usage.totalTokens, locale)}</strong>
+          <strong>{formatTokenMetric(day.usage, day.cost, locale, copy)}</strong>
           <span>{formatWeekday(day.date, locale)}</span>
         </div>
       ))}
@@ -775,7 +795,7 @@ function ModelUsageChart({ stats, locale, copy }: { stats: ModelStats[]; locale:
         <div className="codex-model-row" key={model.model}>
           <div className="codex-model-row-heading">
             <strong>{model.model}</strong>
-            <span>{formatCompact(model.usage.totalTokens, locale)} tok</span>
+            <span>{formatTokenMetric(model.usage, model.cost, locale, copy)}</span>
           </div>
           <div className="codex-horizontal-track" aria-hidden="true">
             <span style={{ inlineSize: `${Math.max(2, (model.usage.totalTokens / maxTokens) * 100)}%` }} />
@@ -827,7 +847,7 @@ function ProjectList({ projects, locale, copy, onProject }: { projects: ProjectA
           </div>
           <div className="codex-project-card-stats">
             <span>{project.totals.sessionCount} {copy('sessions')}</span>
-            <span>{formatCompact(project.totals.usage.totalTokens, locale)} tok</span>
+            <span>{formatTokenMetric(project.totals.usage, project.totals.cost, locale, copy)}</span>
             <time dateTime={project.updatedAt}>{formatRelativeTime(project.updatedAt, locale)}</time>
           </div>
         </button>
@@ -851,7 +871,7 @@ function SessionList({ sessions, locale, copy, onSession }: { sessions: SessionA
             <StatusBadge status={session.status} copy={copy} />
           </div>
           <div className="codex-session-row-metrics">
-            <span>{formatCompact(session.usage.totalTokens, locale)} tok</span>
+            <span>{formatTokenMetric(session.usage, session.cost, locale, copy)}</span>
             <span>{session.requestCount} req</span>
             <span>{session.toolCallCount} tools</span>
             <time dateTime={session.updatedAt}>{formatRelativeTime(session.updatedAt, locale)}</time>
@@ -1004,8 +1024,33 @@ function intlLocale(locale: Locale): string {
   return locale === 'zh-CN' ? 'zh-CN' : locale;
 }
 
-function tokenComposition(usage: TokenUsage, locale: Locale, copy: CopyFunction): string {
-  return `${copy('input')} ${formatCompact(usage.inputTokens, locale)} · ${copy('output')} ${formatCompact(usage.outputTokens, locale)}`;
+function formatTokenMetric(usage: TokenUsage, cost: TokenCostEstimate, locale: Locale, copy: CopyFunction): string {
+  return `${formatCompact(usage.totalTokens, locale)} ${copy('tokens')} · ${formatTokenCost(cost, locale, copy)}`;
+}
+
+function tokenComposition(usage: TokenUsage, cost: TokenCostEstimate, locale: Locale, copy: CopyFunction): string {
+  return `${copy('input')} ${formatCompact(usage.inputTokens, locale)} · ${copy('cached')} ${formatCompact(usage.cachedInputTokens, locale)} · ${copy('output')} ${formatCompact(usage.outputTokens, locale)} · ${formatTokenCost(cost, locale, copy)}`;
+}
+
+function formatTokenCost(cost: TokenCostEstimate, locale: Locale, copy: CopyFunction): string {
+  if (cost.amountUsd === null || !Number.isFinite(cost.amountUsd)) {
+    return `${copy('estimatedCost')} ${copy('costUnknown')}`;
+  }
+  const amount = formatUsd(cost.amountUsd, locale);
+  if (cost.coverage === 'partial') return `${copy('estimatedCost')} ${amount} · ${copy('costPartial')}`;
+  return `${copy('estimatedCost')} ${amount}`;
+}
+
+function formatUsd(value: number, locale: Locale): string {
+  const amount = Math.abs(value);
+  if (amount > 0 && amount < 1e-8) return `${value < 0 ? '-' : ''}$${amount.toExponential(2)}`;
+  const maximumFractionDigits = amount >= 1 ? 2 : amount >= 0.01 ? 4 : amount >= 0.0001 ? 6 : 8;
+  return new Intl.NumberFormat(intlLocale(locale), {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: amount >= 1 ? 2 : 0,
+    maximumFractionDigits,
+  }).format(value);
 }
 
 function averageModelDuration(stats: ModelStats[]): number | null {

@@ -1,5 +1,19 @@
 [
   {
+    "date": "2026-08-14",
+    "items": [
+      {
+        "id": "2026-08-14-codex-analyzer-cost-estimates",
+        "commitSubject": "Add Codex analyzer cost estimates",
+        "summary": {
+          "en": "Codex Session Analyzer now estimates token costs from a dated OpenAI price snapshot across requests, turns, sessions, projects, models, daily activity, and totals.",
+          "ja": "Codex セッション分析で、取得日時付きの OpenAI 価格スナップショットを基に、リクエスト、ターン、セッション、プロジェクト、モデル、日別アクティビティ、合計のトークン費用を推定できるようになりました。",
+          "zh-CN": "Codex 对话分析器现在可根据带获取时间的 OpenAI 价格快照，估算请求、轮次、对话、项目、模型、每日活动及总览中的 Token 费用。"
+        }
+      }
+    ]
+  },
+  {
     "date": "2026-06-22",
     "items": [
       {

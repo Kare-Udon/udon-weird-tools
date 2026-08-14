@@ -11,6 +11,56 @@ export const codexAnalyzerUi = {
     en: 'Choose the Codex data directory, usually ~/.codex. Files are read only in this browser.',
     ja: 'Codex データディレクトリ（通常 ~/.codex）を選択します。ファイルはブラウザ内だけで読み取られます。',
   },
+  pricingTitle: {
+    'zh-CN': '费用估算',
+    en: 'Cost estimate',
+    ja: '費用見積もり',
+  },
+  pricingHint: {
+    'zh-CN': '按当前 OpenAI 官方 Standard 价格快照估算；GPT-5.6 长上下文按每个请求的 input Token 判断。这不是历史账单或发票。',
+    en: 'Estimated from the current OpenAI official Standard price snapshot; GPT-5.6 long context is selected per request input tokens. This is not a historical bill or invoice.',
+    ja: '現在の OpenAI 公式 Standard 価格スナップショットによる推定です。GPT-5.6 の長いコンテキストは各リクエストの input トークンで判定し、過去の請求書やインボイスではありません。',
+  },
+  pricingDetails: {
+    'zh-CN': '估算边界',
+    en: 'Estimation limits',
+    ja: '推定の範囲',
+  },
+  pricingLimitations: {
+    'zh-CN': 'rollout 无法还原 cache writes、区域加价、工具按调用或存储收费、订阅折扣和税费，因此不计入。',
+    en: 'Rollouts cannot recover cache writes, regional uplifts, per-call or storage tool charges, subscription discounts, or taxes, so they are excluded.',
+    ja: 'rollout から cache writes、地域上乗せ、ツールの呼び出し・保存料金、サブスクリプション割引、税金は復元できないため、含めません。',
+  },
+  pricingFetchedAt: {
+    'zh-CN': '价格获取时间',
+    en: 'Snapshot fetched',
+    ja: '取得日時',
+  },
+  pricingSource: {
+    'zh-CN': 'OpenAI 官方价格页',
+    en: 'OpenAI pricing',
+    ja: 'OpenAI 価格ページ',
+  },
+  pricingModelDirectory: {
+    'zh-CN': '模型目录',
+    en: 'Model directory',
+    ja: 'モデル一覧',
+  },
+  estimatedCost: {
+    'zh-CN': '估算费用',
+    en: 'Estimated cost',
+    ja: '推定費用',
+  },
+  costPartial: {
+    'zh-CN': 'partial',
+    en: 'partial',
+    ja: 'partial',
+  },
+  costUnknown: {
+    'zh-CN': 'unknown',
+    en: 'unknown',
+    ja: 'unknown',
+  },
   selectFolder: {
     'zh-CN': '选择目录',
     en: 'Choose folder',

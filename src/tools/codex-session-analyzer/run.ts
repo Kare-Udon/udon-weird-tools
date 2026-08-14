@@ -1,4 +1,15 @@
 import type { ToolRunContext } from '../_types';
+import {
+  CODEX_PRICING_SNAPSHOT,
+  estimateTokenCost,
+  mergeTokenCosts,
+  zeroTokenCost,
+  type PricingSnapshotMetadata,
+  type TokenCostEstimate,
+} from './pricing.ts';
+
+export type { PricingSnapshotMetadata, TokenCostEstimate } from './pricing.ts';
+export { CODEX_PRICING_SNAPSHOT } from './pricing.ts';
 
 export const CODEX_ANALYZER_TOOL_SLUG = 'codex-session-analyzer';
 
@@ -40,6 +51,7 @@ export type ModelRequestAnalysis = {
   generationDurationMs: number | null;
   outputTokensPerSecond: number | null;
   usage: TokenUsage;
+  cost: TokenCostEstimate;
   timingKind: 'estimated';
 };
 
@@ -77,6 +89,7 @@ export type TurnAnalysis = {
   model: string;
   reasoningEffort: string | null;
   usage: TokenUsage;
+  cost: TokenCostEstimate;
   requests: ModelRequestAnalysis[];
   tools: ToolCallAnalysis[];
   userMessageCount: number;
@@ -103,6 +116,7 @@ export type SessionAnalysis = {
   updatedAt: string;
   status: SessionStatus;
   usage: TokenUsage;
+  cost: TokenCostEstimate;
   turns: TurnAnalysis[];
   requestCount: number;
   toolCallCount: number;
@@ -125,6 +139,7 @@ export type ModelStats = {
   cacheHitRate: number | null;
   reasoningRatio: number | null;
   averageTimeToFirstTokenMs: number | null;
+  cost: TokenCostEstimate;
 };
 
 export type ToolStats = {
@@ -146,6 +161,7 @@ export type DailyStats = {
   toolCallCount: number;
   activeDurationMs: number;
   usage: TokenUsage;
+  cost: TokenCostEstimate;
 };
 
 export type AnalysisTotals = {
@@ -164,6 +180,7 @@ export type AnalysisTotals = {
   cacheHitRate: number | null;
   reasoningRatio: number | null;
   usage: TokenUsage;
+  cost: TokenCostEstimate;
 };
 
 export type ProjectAnalysis = {
@@ -182,6 +199,7 @@ export type CodexAnalysisResult = {
   generatedAt: string;
   lookbackStart: string;
   options: CodexAnalyzerOptions;
+  pricingSnapshot: PricingSnapshotMetadata;
   totals: AnalysisTotals;
   projects: ProjectAnalysis[];
   sessions: SessionAnalysis[];
@@ -317,6 +335,7 @@ export function createCodexAnalysisFromSessions(
     generatedAt: now.toISOString(),
     lookbackStart: lookbackStartDate.toISOString(),
     options,
+    pricingSnapshot: CODEX_PRICING_SNAPSHOT,
     totals,
     projects,
     sessions,
@@ -428,6 +447,7 @@ function parseSession(source: CodexRolloutSource, index: Map<string, SessionInde
         generationDurationMs,
         outputTokensPerSecond: finiteOrNull(speed),
         usage: delta,
+        cost: estimateTokenCost(activeTurn.currentModel || activeTurn.model || 'unknown', delta),
         timingKind: 'estimated',
       };
 
@@ -540,6 +560,7 @@ function parseSession(source: CodexRolloutSource, index: Map<string, SessionInde
     updatedAt: lastTimestamp,
     status,
     usage,
+    cost: mergeTokenCosts(finalizedTurns.map((turn) => turn.cost)),
     turns: finalizedTurns,
     requestCount: finalizedTurns.reduce((sum, turn) => sum + turn.requests.length, 0),
     toolCallCount: tools.length,
@@ -561,6 +582,7 @@ function createTurnDraft(id: string, index: number, startedAt: string, model: st
     model,
     reasoningEffort: effort,
     usage: emptyUsage(),
+    cost: zeroTokenCost(),
     requests: [],
     tools: [],
     userMessageCount: 0,
@@ -590,6 +612,7 @@ function finalizeTurn(turn: TurnDraft): TurnAnalysis {
     model: turn.model,
     reasoningEffort: turn.reasoningEffort,
     usage: turn.usage,
+    cost: mergeTokenCosts(turn.requests.map((request) => request.cost)),
     requests: turn.requests,
     tools,
     userMessageCount: turn.userMessageCount,
@@ -823,6 +846,7 @@ function aggregateTotals(sessions: SessionAnalysis[], projectCount: number): Ana
   const durations = turns.map((turn) => turn.durationMs).filter(isFiniteNumber);
   const ttfts = turns.map((turn) => turn.timeToFirstTokenMs).filter(isFiniteNumber);
   const usage = sumUsage(turns.map((turn) => turn.usage));
+  const cost = mergeTokenCosts(turns.map((turn) => turn.cost));
 
   return {
     projectCount,
@@ -840,6 +864,7 @@ function aggregateTotals(sessions: SessionAnalysis[], projectCount: number): Ana
     cacheHitRate: usage.inputTokens > 0 ? usage.cachedInputTokens / usage.inputTokens : null,
     reasoningRatio: usage.outputTokens > 0 ? usage.reasoningOutputTokens / usage.outputTokens : null,
     usage,
+    cost,
   };
 }
 
@@ -906,6 +931,7 @@ function aggregateModelStats(sessions: SessionAnalysis[]): ModelStats[] {
         cacheHitRate: usage.inputTokens > 0 ? usage.cachedInputTokens / usage.inputTokens : null,
         reasoningRatio: usage.outputTokens > 0 ? usage.reasoningOutputTokens / usage.outputTokens : null,
         averageTimeToFirstTokenMs: average(bucket.ttfts),
+        cost: mergeTokenCosts(bucket.requests.map((request) => request.cost)),
       } satisfies ModelStats;
     })
     .sort((left, right) => right.usage.totalTokens - left.usage.totalTokens);
@@ -952,6 +978,7 @@ function aggregateDailyStats(sessions: SessionAnalysis[], start: Date, end: Date
       toolCallCount: 0,
       activeDurationMs: 0,
       usage: emptyUsage(),
+      cost: zeroTokenCost(),
       sessionIds: new Set(),
     });
     cursor.setUTCDate(cursor.getUTCDate() + 1);
@@ -968,6 +995,7 @@ function aggregateDailyStats(sessions: SessionAnalysis[], start: Date, end: Date
       day.toolCallCount += turn.tools.length;
       day.activeDurationMs += turn.durationMs ?? 0;
       day.usage = addUsage(day.usage, turn.usage);
+      day.cost = mergeTokenCosts([day.cost, turn.cost]);
     }
   }
 
