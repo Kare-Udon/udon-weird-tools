@@ -3,6 +3,15 @@
     "date": "2026-08-14",
     "items": [
       {
+        "id": "2026-08-14-codex-analyzer-cost-view-redesign",
+        "commitSubject": "Redesign Codex analyzer cost views",
+        "summary": {
+          "en": "Codex Session Analyzer now presents price estimates in flip views and compact cost badges.",
+          "ja": "Codex セッション分析の価格推定をフリップ表示とコンパクトなコストバッジに整理しました。",
+          "zh-CN": "Codex 对话分析器现在通过翻面视图和紧凑费用标签展示价格估算。"
+        }
+      },
+      {
         "id": "2026-08-14-codex-analyzer-cost-estimates",
         "commitSubject": "Add Codex analyzer cost estimates",
         "summary": {

@@ -2776,8 +2776,180 @@ textarea {
   line-height: 1.08;
 }
 
+.codex-metric-card-value {
+  min-width: 0;
+}
+
 .codex-metric-card small {
   line-height: 1.4;
+}
+
+.codex-token-detail,
+.codex-token-cost-inline {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.codex-token-detail {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.codex-cost-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid color-mix(in srgb, #8b5cf6 36%, var(--line));
+  border-radius: 999px;
+  padding: 0.15rem 0.45rem;
+  background: color-mix(in srgb, #ede9fe 76%, var(--surface));
+  color: color-mix(in srgb, #6d28d9 84%, var(--text));
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.codex-cost-badge--large {
+  padding: 0.25rem 0.65rem;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  line-height: 1.05;
+}
+
+.codex-token-cost-card {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.codex-token-cost-flip {
+  display: grid;
+  align-content: stretch;
+  min-width: 0;
+  width: 100%;
+  min-height: 6.6rem;
+  border: 0;
+  padding: 0.15rem 2.1rem 0.15rem 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  perspective: 700px;
+}
+
+.codex-token-cost-card-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.codex-token-cost-flip:focus-visible,
+.codex-pricing-help:focus-visible,
+.codex-activity-chart:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 72%, white);
+  outline-offset: 3px;
+}
+
+.codex-token-cost-flip__inner {
+  position: relative;
+  display: block;
+  min-height: 4.6rem;
+  transform-style: preserve-3d;
+  transition: transform 180ms ease;
+}
+
+.codex-token-cost-flip[data-view='cost'] .codex-token-cost-flip__inner {
+  transform: rotateY(180deg);
+}
+
+.codex-token-cost-flip__face {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  min-height: 4.6rem;
+  gap: 0.35rem;
+  backface-visibility: hidden;
+}
+
+.codex-token-cost-face-label {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.codex-token-cost-flip__face[data-face='cost'] {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+.codex-token-cost-flip__face[data-face='token'] strong {
+  overflow-wrap: anywhere;
+  color: var(--accent-strong);
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  line-height: 1.05;
+}
+
+.codex-token-cost-card > .codex-pricing-help {
+  position: absolute;
+  inset-block-start: 0.9rem;
+  inset-inline-end: 0.9rem;
+}
+
+.codex-pricing-help {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  inline-size: 1.45rem;
+  block-size: 1.45rem;
+  border: 1px solid color-mix(in srgb, #8b5cf6 42%, var(--line));
+  border-radius: 50%;
+  padding: 0;
+  background: color-mix(in srgb, #ede9fe 78%, var(--surface));
+  color: color-mix(in srgb, #6d28d9 86%, var(--text));
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: help;
+}
+
+.codex-pricing-tooltip {
+  position: absolute;
+  z-index: 5;
+  inset-block-start: calc(100% + 0.45rem);
+  inset-inline-end: 0;
+  display: grid;
+  gap: 0.35rem;
+  width: max-content;
+  max-width: min(22rem, calc(100vw - 2rem));
+  border: 1px solid color-mix(in srgb, #8b5cf6 34%, var(--line));
+  border-radius: 0.55rem;
+  padding: 0.65rem 0.75rem;
+  background: var(--surface);
+  box-shadow: 0 0.5rem 1.2rem color-mix(in srgb, var(--text) 10%, transparent);
+  color: var(--text);
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: left;
+  overflow-wrap: anywhere;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.2rem);
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.codex-pricing-help:hover .codex-pricing-tooltip,
+.codex-pricing-help:focus-visible .codex-pricing-tooltip {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .codex-dashboard-grid {
@@ -2808,11 +2980,36 @@ textarea {
 }
 
 .codex-activity-chart {
+  position: relative;
+  min-height: 12rem;
+  cursor: pointer;
+  perspective: 900px;
+}
+
+.codex-activity-chart__inner {
+  position: relative;
+  min-height: 12rem;
+  transform-style: preserve-3d;
+  transition: transform 200ms ease;
+}
+
+.codex-activity-chart[data-view='cost'] .codex-activity-chart__inner {
+  transform: rotateY(180deg);
+}
+
+.codex-activity-chart__face {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(3.4rem, 1fr));
   align-items: end;
   min-height: 12rem;
   gap: 0.65rem;
+  backface-visibility: hidden;
+}
+
+.codex-activity-chart__face[data-face='cost'] {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
 }
 
 .codex-activity-day {
@@ -2832,6 +3029,13 @@ textarea {
   text-overflow: ellipsis;
 }
 
+.codex-activity-day time {
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
 .codex-activity-bar {
   display: flex;
   align-items: end;
@@ -2844,6 +3048,10 @@ textarea {
   width: min(2.4rem, 72%);
   border-radius: 5px 5px 1px 1px;
   background: color-mix(in srgb, var(--accent) 78%, var(--surface));
+}
+
+.codex-activity-chart__face[data-face='cost'] .codex-activity-bar span {
+  background: color-mix(in srgb, #8b5cf6 78%, var(--surface));
 }
 
 .codex-model-chart,
@@ -3205,6 +3413,14 @@ textarea {
   color: var(--muted);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .codex-token-cost-flip__inner,
+  .codex-activity-chart__inner,
+  .codex-pricing-tooltip {
+    transition-duration: 1ms;
+  }
+}
+
 .codex-scan-footer {
   display: flex;
   align-items: center;
@@ -3336,7 +3552,12 @@ textarea {
     padding: 0.85rem;
   }
 
-  .codex-activity-chart {
+  .codex-token-cost-card > .codex-pricing-help {
+    inset-block-start: 0.75rem;
+    inset-inline-end: 0.75rem;
+  }
+
+  .codex-activity-chart__face {
     grid-template-columns: repeat(auto-fit, minmax(2.7rem, 1fr));
     gap: 0.4rem;
   }

@@ -11,20 +11,10 @@ export const codexAnalyzerUi = {
     en: 'Choose the Codex data directory, usually ~/.codex. Files are read only in this browser.',
     ja: 'Codex データディレクトリ（通常 ~/.codex）を選択します。ファイルはブラウザ内だけで読み取られます。',
   },
-  pricingTitle: {
-    'zh-CN': '费用估算',
-    en: 'Cost estimate',
-    ja: '費用見積もり',
-  },
   pricingHint: {
-    'zh-CN': '按当前 OpenAI 官方 Standard 价格快照估算；GPT-5.6 长上下文按每个请求的 input Token 判断。这不是历史账单或发票。',
-    en: 'Estimated from the current OpenAI official Standard price snapshot; GPT-5.6 long context is selected per request input tokens. This is not a historical bill or invoice.',
-    ja: '現在の OpenAI 公式 Standard 価格スナップショットによる推定です。GPT-5.6 の長いコンテキストは各リクエストの input トークンで判定し、過去の請求書やインボイスではありません。',
-  },
-  pricingDetails: {
-    'zh-CN': '估算边界',
-    en: 'Estimation limits',
-    ja: '推定の範囲',
+    'zh-CN': '按当前 OpenAI 官方 Standard 价格快照估算。这是估算，不是账单或发票；GPT-5.6 长上下文按每个请求的 input Token 判断。',
+    en: 'Estimated from the current OpenAI official Standard price snapshot. This is an estimate, not a bill or invoice; GPT-5.6 long context is selected per request input tokens.',
+    ja: '現在の OpenAI 公式 Standard 価格スナップショットによる推定です。請求書やインボイスではなく、GPT-5.6 の長いコンテキストは各リクエストの input トークンで判定します。',
   },
   pricingLimitations: {
     'zh-CN': 'rollout 无法还原 cache writes、区域加价、工具按调用或存储收费、订阅折扣和税费，因此不计入。',
@@ -36,30 +26,35 @@ export const codexAnalyzerUi = {
     en: 'Snapshot fetched',
     ja: '取得日時',
   },
-  pricingSource: {
-    'zh-CN': 'OpenAI 官方价格页',
-    en: 'OpenAI pricing',
-    ja: 'OpenAI 価格ページ',
+  pricingHelp: {
+    'zh-CN': '价格估算说明',
+    en: 'Pricing estimate information',
+    ja: '価格推定の説明',
   },
-  pricingModelDirectory: {
-    'zh-CN': '模型目录',
-    en: 'Model directory',
-    ja: 'モデル一覧',
+  showCost: {
+    'zh-CN': '查看价格',
+    en: 'Show price',
+    ja: '価格を表示',
   },
-  estimatedCost: {
-    'zh-CN': '估算费用',
-    en: 'Estimated cost',
-    ja: '推定費用',
+  showTokens: {
+    'zh-CN': '查看 Token',
+    en: 'Show tokens',
+    ja: 'トークンを表示',
+  },
+  activityFlipHint: {
+    'zh-CN': '点击或按 Enter / Space，在 Token 与价格视图之间切换',
+    en: 'Click or press Enter / Space to switch between Token and price views',
+    ja: 'クリックまたは Enter / Space でトークンと価格の表示を切り替えます',
   },
   costPartial: {
-    'zh-CN': 'partial',
-    en: 'partial',
-    ja: 'partial',
+    'zh-CN': '部分覆盖',
+    en: 'partially covered',
+    ja: '一部のみ',
   },
   costUnknown: {
-    'zh-CN': 'unknown',
-    en: 'unknown',
-    ja: 'unknown',
+    'zh-CN': '覆盖未知',
+    en: 'coverage unknown',
+    ja: 'カバレッジ不明',
   },
   selectFolder: {
     'zh-CN': '选择目录',
