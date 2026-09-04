@@ -19,6 +19,7 @@ const SpeechToTextTool = lazy(() => import('./SpeechToTextTool'));
 const Base64CodecTool = lazy(() => import('./Base64CodecTool'));
 const XPhotoUploadPreprocessorTool = lazy(() => import('./XPhotoUploadPreprocessorTool'));
 const CodexSessionAnalyzerTool = lazy(() => import('./CodexSessionAnalyzerTool'));
+const ImageSplitterTool = lazy(() => import('./ImageSplitterTool'));
 const FAVORITE_RESULTS_ENTRY_ID = 'favorite-results';
 
 export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
@@ -50,6 +51,14 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
     return (
       <Suspense fallback={<div className="panel muted-panel">{t(locale, 'toolLoading')}</div>}>
         <CodexSessionAnalyzerTool locale={locale} />
+      </Suspense>
+    );
+  }
+
+  if (slug === 'image-splitter') {
+    return (
+      <Suspense fallback={<div className="panel muted-panel">{t(locale, 'toolLoading')}</div>}>
+        <ImageSplitterTool locale={locale} />
       </Suspense>
     );
   }

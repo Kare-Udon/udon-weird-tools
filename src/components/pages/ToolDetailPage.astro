@@ -16,6 +16,7 @@ const { locale, tool } = Astro.props as {
 
 const toolName = localize(tool.i18n.name, locale);
 const toolDescription = localize(tool.i18n.description, locale);
+const isImageSplitter = tool.slug === 'image-splitter';
 ---
 
 <BaseLayout
@@ -28,16 +29,20 @@ const toolDescription = localize(tool.i18n.description, locale);
 >
   <article class="tool-detail">
     <header class="page-heading">
-      <div class="tool-card-meta inline-meta">
-        <span>{getCategoryLabel(tool.category, locale)}</span>
-        <span>{tool.status === 'stable' ? t(locale, 'statusStable') : t(locale, 'statusExperimental')}</span>
-        <span>{tool.version}</span>
-      </div>
+      {!isImageSplitter && (
+        <div class="tool-card-meta inline-meta">
+          <span>{getCategoryLabel(tool.category, locale)}</span>
+          <span>{tool.status === 'stable' ? t(locale, 'statusStable') : t(locale, 'statusExperimental')}</span>
+          <span>{tool.version}</span>
+        </div>
+      )}
       <h1>{toolName}</h1>
-      <p>{toolDescription}</p>
-      <div class="tag-row">
-        {tool.tags.map((tag) => <span>{tag}</span>)}
-      </div>
+      {!isImageSplitter && <p>{toolDescription}</p>}
+      {!isImageSplitter && (
+        <div class="tag-row">
+          {tool.tags.map((tag) => <span>{tag}</span>)}
+        </div>
+      )}
     </header>
 
     {tool.slug === 'storage-manager' ? <StorageManager client:load locale={locale} /> : <ToolPlayground client:load slug={tool.slug} locale={locale} />}

@@ -1,0 +1,662 @@
+.image-splitter-tool {
+  min-width: 0;
+}
+
+.image-splitter-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  gap: clamp(1.25rem, 3vw, 1.7rem);
+  padding: clamp(1rem, 3vw, 1.4rem);
+}
+
+.image-splitter-upload,
+.image-splitter-settings,
+.image-splitter-editor,
+.image-splitter-preview-section {
+  min-width: 0;
+}
+
+.image-splitter-upload {
+  display: grid;
+  gap: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  background: color-mix(in srgb, var(--surface) 94%, var(--accent-soft));
+}
+
+.image-splitter-field-label {
+  color: var(--text);
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.image-splitter-upload-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.image-splitter-upload-button {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.image-splitter-tool button.primary:hover {
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.image-splitter-selected-preview {
+  display: flex;
+  min-width: 0;
+  justify-content: center;
+  padding-top: 0.15rem;
+}
+
+.image-splitter-file-thumbnail {
+  display: block;
+  width: 100%;
+  max-width: 32rem;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-soft);
+}
+
+.image-splitter-reset-button {
+  flex: 0 0 auto;
+  margin-left: auto;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+.image-splitter-reset-button:hover {
+  border-color: var(--line);
+  background: var(--surface);
+}
+
+.image-splitter-settings {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.image-splitter-setting-group {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.image-splitter-option-grid,
+.image-splitter-count-row {
+  display: flex;
+  min-width: 0;
+  align-items: stretch;
+  gap: 0.7rem;
+}
+
+.image-splitter-option-grid--two > .image-splitter-option {
+  flex: 0 1 15rem;
+}
+
+.image-splitter-option,
+.image-splitter-stepper {
+  min-height: 2.35rem;
+}
+
+.image-splitter-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--muted-strong);
+  white-space: nowrap;
+}
+
+.image-splitter-option--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
+.image-splitter-direction-glyph {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.15;
+}
+
+.image-splitter-count-row > .image-splitter-option,
+.image-splitter-count-row > .image-splitter-stepper {
+  flex: 0 1 8rem;
+}
+
+.image-splitter-stepper {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(1.75rem, 0.75fr) minmax(2rem, 1fr) minmax(1.75rem, 0.75fr);
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.image-splitter-stepper button {
+  min-height: 2.25rem;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--muted-strong);
+  font-size: 1.15rem;
+}
+
+.image-splitter-stepper button + input,
+.image-splitter-stepper input + button {
+  border-left: 1px solid var(--line);
+}
+
+.image-splitter-stepper input {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.25rem;
+  border: 0;
+  border-radius: 0;
+  padding: 0.35rem;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+.image-splitter-stepper input::-webkit-inner-spin-button,
+.image-splitter-stepper input::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.image-splitter-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.image-splitter-editor-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.image-splitter-editor-heading h2,
+.image-splitter-preview-section h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.18rem;
+}
+
+.image-splitter-symmetric-control {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--muted-strong);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.image-splitter-symmetric-control input {
+  width: 1.05rem;
+  height: 1.05rem;
+  min-width: 1.05rem;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.image-splitter-editor-media {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--surface-soft) 78%, var(--accent-soft));
+}
+
+.image-splitter-editor-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  width: min(100%, calc(var(--image-splitter-source-ratio) * min(55vh, 30rem)));
+  max-width: 100%;
+  gap: 0.55rem;
+}
+
+.image-splitter-editor-content--static {
+  gap: 0;
+}
+
+.image-splitter-editor-content--horizontal {
+  grid-template-columns: minmax(0, 1fr) 2.75rem;
+  /* 端点滑块也保留完整触控区，不与上方标题或下方预览相碰。 */
+  padding-block: 0.75rem;
+}
+
+.image-splitter-editor-image-frame {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  line-height: 0;
+}
+
+.image-splitter-editor-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  max-height: none;
+  user-select: none;
+}
+
+.image-splitter-cut-line {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  cursor: col-resize;
+}
+
+.image-splitter-cut-line--vertical {
+  top: 0;
+  bottom: 0;
+  width: 1.45rem;
+  transform: translateX(-50%);
+}
+
+.image-splitter-cut-line--horizontal {
+  right: 0;
+  left: 0;
+  height: 1.45rem;
+  transform: translateY(-50%);
+  cursor: row-resize;
+}
+
+.image-splitter-cut-line span {
+  display: block;
+  background: color-mix(in srgb, #ffffff 88%, var(--accent));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-strong) 82%, transparent);
+}
+
+.image-splitter-cut-line--vertical span {
+  width: 2px;
+  height: 100%;
+}
+
+.image-splitter-cut-line--horizontal span {
+  width: 100%;
+  height: 2px;
+}
+
+.image-splitter-cut-line--active span {
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-strong);
+}
+
+.image-splitter-slider-track {
+  position: relative;
+  width: 100%;
+  min-height: 2.7rem;
+  margin-top: -0.1rem;
+  touch-action: none;
+}
+
+.image-splitter-slider-rail {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 2px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: var(--line-strong);
+  pointer-events: none;
+}
+
+.image-splitter-slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.image-splitter-slider-thumb span {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  margin: auto;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.image-splitter-slider-track--vertical {
+  min-height: 0;
+  margin: 1px 0;
+}
+
+.image-splitter-slider-track--vertical .image-splitter-slider-rail {
+  top: 0;
+  right: auto;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  height: auto;
+  transform: translateX(-50%);
+}
+
+.image-splitter-slider-track--vertical .image-splitter-slider-thumb {
+  top: auto;
+  left: 50%;
+  cursor: ns-resize;
+}
+
+.image-splitter-slider-thumb--active span {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-strong) 40%, transparent);
+}
+
+.image-splitter-slider-thumb:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.image-splitter-slider-thumb:active,
+.image-splitter-slider-thumb:disabled {
+  transform: translate(-50%, -50%);
+}
+
+.image-splitter-slider-thumb:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.image-splitter-preview-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.7rem;
+}
+
+.image-splitter-preview-layout {
+  display: grid;
+  container-type: inline-size;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  gap: 0.7rem;
+}
+
+.image-splitter-preview-layout--horizontal {
+  grid-template-columns: minmax(0, 1fr) 5.5rem;
+  min-height: calc(2.75rem + 0.5rem);
+  gap: 0.55rem;
+}
+
+.image-splitter-preview-viewport {
+  --image-splitter-preview-gap: 3px;
+  container-type: inline-size;
+  min-width: 0;
+  /* 常见横竖图按比例完整展开，只有超长图使用内部滚动。 */
+  max-height: max(100vh, 200cqw);
+  max-width: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
+  padding-bottom: 0.35rem;
+}
+
+.image-splitter-preview-list {
+  display: flex;
+  min-width: 0;
+}
+
+.image-splitter-preview-list--vertical {
+  display: grid;
+  width: 100%;
+  height: calc(
+    (100cqw - var(--image-splitter-preview-gap) * var(--image-splitter-preview-gap-count)) /
+    var(--image-splitter-preview-ratio)
+  );
+  align-items: stretch;
+  gap: var(--image-splitter-preview-gap);
+}
+
+.image-splitter-preview-list--horizontal {
+  width: 100%;
+  flex-direction: column;
+  gap: var(--image-splitter-preview-gap);
+}
+
+.image-splitter-slice-card {
+  min-width: 0;
+}
+
+.image-splitter-slice-card--vertical {
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+}
+
+.image-splitter-slice-card--horizontal {
+  width: 100%;
+}
+
+.image-splitter-slice-media {
+  position: relative;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 4px;
+  background: var(--surface-soft);
+  box-shadow: inset 0 0 0 1px var(--line);
+  line-height: 0;
+  align-self: center;
+}
+
+.image-splitter-slice-card--vertical .image-splitter-slice-media {
+  width: 100%;
+  height: 100%;
+}
+
+.image-splitter-slice-card--highlighted .image-splitter-slice-media {
+  outline: 1px solid var(--accent);
+  outline-offset: 0;
+}
+
+.image-splitter-slice-card--highlighted .image-splitter-slice-media::after {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 2px var(--accent);
+  content: '';
+  pointer-events: none;
+}
+
+.image-splitter-slice-card--horizontal .image-splitter-slice-media {
+  width: 100%;
+  height: auto;
+}
+
+.image-splitter-slice-media img {
+  position: absolute;
+  display: block;
+  max-width: none;
+  max-height: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+.image-splitter-preview-save-grid {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+  gap: 0.55rem;
+}
+
+.image-splitter-preview-save-grid > button {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.75rem;
+  white-space: normal;
+}
+
+.image-splitter-preview-layout--horizontal > .image-splitter-preview-save-grid {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* 留白只调整保存栏；空间足够时逐片居中，放不下时独立紧凑滚动。 */
+  contain: size;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+  padding: 0.25rem;
+}
+
+.image-splitter-preview-layout--horizontal .image-splitter-preview-save-grid > button {
+  flex: none;
+  padding-inline: 0.4rem;
+}
+
+.image-splitter-status,
+.image-splitter-inline-status,
+.image-splitter-save-message {
+  color: var(--muted-strong);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.image-splitter-error,
+.image-splitter-save-message,
+.image-splitter-zip-fallback {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.8rem 0.9rem;
+  background: color-mix(in srgb, var(--surface) 94%, var(--accent-soft));
+}
+
+.image-splitter-error {
+  display: grid;
+  gap: 0.25rem;
+  border-color: color-mix(in srgb, var(--danger) 42%, var(--line));
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.image-splitter-error span {
+  line-height: 1.55;
+}
+
+.image-splitter-save-message--error {
+  border-color: color-mix(in srgb, var(--danger) 42%, var(--line));
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.image-splitter-zip-fallback {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.image-splitter-save-bar {
+  padding-top: 0.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+}
+
+.image-splitter-save-all {
+  width: 100%;
+  min-height: 2.8rem;
+}
+
+.image-splitter-option:focus-visible,
+.image-splitter-stepper button:focus-visible,
+.image-splitter-stepper input:focus-visible,
+.image-splitter-upload-row button:focus-visible,
+.image-splitter-symmetric-control input:focus-visible,
+.image-splitter-preview-save-grid button:focus-visible,
+.image-splitter-slider-thumb:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .image-splitter-panel {
+    gap: 1.2rem;
+    padding: 0.9rem;
+  }
+
+  .image-splitter-option-grid,
+  .image-splitter-count-row {
+    gap: 0.55rem;
+  }
+
+  .image-splitter-option-grid--two {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .image-splitter-option-grid--two > .image-splitter-option {
+    flex: none;
+  }
+
+  .image-splitter-count-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .image-splitter-count-row > .image-splitter-option {
+    min-width: 0;
+    flex: none;
+    padding-inline: 0.45rem;
+  }
+
+  .image-splitter-editor-heading {
+    align-items: flex-start;
+  }
+
+  .image-splitter-symmetric-control {
+    min-height: 1.8rem;
+    white-space: normal;
+  }
+
+  .image-splitter-editor-content {
+    width: min(100%, calc(var(--image-splitter-source-ratio) * 48vh));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-splitter-tool * {
+    scroll-behavior: auto;
+    transition-duration: 1ms;
+  }
+}

@@ -13,6 +13,7 @@ import { manifest as unicodeFancyText } from './unicode-fancy-text/manifest';
 import { manifest as unitypackageExtractor } from './unitypackage-extractor/manifest';
 import { manifest as vrcPhotoMetadata } from './vrc-photo-metadata/manifest';
 import { manifest as xPhotoUploadPreprocessor } from './x-photo-upload-preprocessor/manifest';
+import { manifest as imageSplitter } from './image-splitter/manifest';
 
 export const tools = [
   jsonCleaner,
@@ -26,6 +27,7 @@ export const tools = [
   vrcPhotoMetadata,
   xPhotoUploadPreprocessor,
   unitypackageExtractor,
+  imageSplitter,
 ] as const satisfies readonly ToolManifest[];
 
 export type ToolSlug = (typeof tools)[number]['slug'];
