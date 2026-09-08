@@ -37,6 +37,33 @@ export function getCutPointerRatio(
   return Math.min(1, Math.max(0, (position - start) / length));
 }
 
+export function getSlicedPreviewPointerRatio(
+  direction: SplitDirection,
+  rect: CutControlRect,
+  pointer: CutPointerPosition,
+  cutIndex: number,
+  gapCount: number,
+  gapSize: number,
+): number | null {
+  if (
+    !Number.isInteger(cutIndex) || !Number.isInteger(gapCount) ||
+    cutIndex < 0 || cutIndex >= gapCount || gapCount < 1 ||
+    !Number.isFinite(gapSize) || gapSize < 0
+  ) return null;
+
+  const position = direction === 'vertical' ? pointer.clientX : pointer.clientY;
+  const start = direction === 'vertical' ? rect.left : rect.top;
+  const totalLength = direction === 'vertical' ? rect.width : rect.height;
+  const contentLength = totalLength - gapCount * gapSize;
+  if (
+    !Number.isFinite(position) || !Number.isFinite(start) ||
+    !Number.isFinite(totalLength) || contentLength <= 0
+  ) return null;
+
+  const contentPosition = position - start - (cutIndex + 0.5) * gapSize;
+  return Math.min(1, Math.max(0, contentPosition / contentLength));
+}
+
 export function getNearestCutIndex(cuts: readonly number[], pointerValue: number): number | null {
   if (cuts.length === 0 || !Number.isFinite(pointerValue)) return null;
   // 命中使用未取整的位置，避免相邻窄切片在半像素处选错滑块。

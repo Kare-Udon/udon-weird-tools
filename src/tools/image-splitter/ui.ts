@@ -106,6 +106,11 @@ export const imageSplitterUi = {
     en: 'Adjust cuts',
     ja: '切断位置を調整',
   },
+  previewAndAdjust: {
+    'zh-CN': '预览与调整',
+    en: 'Preview & adjust',
+    ja: 'プレビューと調整',
+  },
   symmetric: {
     'zh-CN': '对称调节',
     en: 'Symmetric adjustment',

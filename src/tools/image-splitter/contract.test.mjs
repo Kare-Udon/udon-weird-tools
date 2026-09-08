@@ -33,7 +33,6 @@ test('自由滑条方向、坐标和辅助功能随切线移动轴同步变化',
 
   assert.match(editor, /sliderOrientation = direction === 'horizontal' \? 'vertical' : 'horizontal'/, '滑条方向必须与切线本身垂直');
   assert.match(editor, /aria-orientation=\{sliderOrientation\}/, '读屏方向必须使用真实滑条方向');
-  assert.match(editor, /image-splitter-editor-content--\$\{direction\}/, '编辑区必须接收切割方向以选择下方或右侧布局');
   assert.match(editor, /image-splitter-slider-track--\$\{sliderOrientation\}/, '轨道样式必须使用滑条自身方向');
   assert.match(editor, /positionStyle = sliderOrientation === 'vertical' \? \{ top: position \} : \{ left: position \}/, '滑块必须在竖轨上按 top 定位，在横轨上按 left 定位');
   assert.match(editor, /style=\{\{ \.\.\.positionStyle, zIndex:/, '方向位置必须传到实际滑块，不能只更改辅助功能属性');
@@ -42,7 +41,7 @@ test('自由滑条方向、坐标和辅助功能随切线移动轴同步变化',
   }
   assert.match(nearest, /getNearestCutIndex\(currentState\.cuts, pointerValue\)/, '空白轨道命中必须保留未取整的像素位置');
   assert.match(keyboard, /getCutKeyboardTarget\(currentState\.direction, event\.key, current, currentAxisLength\)/, '键盘也必须随切线移动方向变化');
-  assert.match(styles, /\.image-splitter-editor-content--horizontal\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+2\.75rem/s, '横切的滑条需独立放在图片右侧');
+  assert.match(styles, /\.image-splitter-preview-layout--horizontal\.image-splitter-preview-layout--adjustable\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+2\.75rem\s+5\.5rem/s, '横切的竖滑条和保存栏必须并入预览右侧');
   assert.match(styles, /\.image-splitter-slider-track--vertical\s*\{[^}]*min-height:\s*0/s, '竖轨不能用旧横轨的最低高度撑高极矮图片');
 });
 
@@ -53,6 +52,33 @@ test('横切滑条使用 Y 坐标，纵切滑条仍使用 X 坐标', async () =>
   assert.equal(getCutPointerRatio('horizontal', rect, { clientX: 900, clientY: 100 }), 0.25, '改变横坐标不能移动横切线');
   assert.equal(getCutPointerRatio('vertical', rect, { clientX: 175, clientY: 0 }), 0.25);
   assert.equal(getCutPointerRatio('vertical', rect, { clientX: 175, clientY: 900 }), 0.25, '改变纵坐标不能移动纵切线');
+});
+
+test('合并预览按固定切片间距修正拖动坐标', async () => {
+  const { getSlicedPreviewPointerRatio } = await cutInput();
+  const verticalRect = { left: 100, top: 50, width: 312, height: 240 };
+  const horizontalRect = { left: 100, top: 50, width: 240, height: 312 };
+
+  assert.equal(
+    getSlicedPreviewPointerRatio('vertical', verticalRect, { clientX: 178, clientY: 0 }, 0, 2, 6),
+    0.25,
+    '第一条竖向间隙的中心应映射回扣除间隙后的 25%',
+  );
+  assert.equal(
+    getSlicedPreviewPointerRatio('vertical', verticalRect, { clientX: 334, clientY: 0 }, 1, 2, 6),
+    0.75,
+    '第二条竖向间隙的中心应映射回扣除间隙后的 75%',
+  );
+  assert.equal(
+    getSlicedPreviewPointerRatio('horizontal', horizontalRect, { clientX: 0, clientY: 128 }, 0, 2, 6),
+    0.25,
+    '横向分片使用同一间距修正但读取纵坐标',
+  );
+  assert.equal(
+    getSlicedPreviewPointerRatio('vertical', verticalRect, { clientX: 178, clientY: 0 }, 2, 2, 6),
+    null,
+    '间隙索引越界时不得产生拖动目标',
+  );
 });
 
 test('滑条只钳制有效主轴，零尺寸或无效坐标不产生目标', async () => {
@@ -82,10 +108,29 @@ test('按下现有滑块或图片切线不跳，拖动时中心直接跟随光�
   const drag = sourceBetween(component, 'function beginCutDrag(', 'function finishCutPointer(', 'cut drag');
   assert.match(drag, /jumpOnPointerDown/, '直接抓取与空白轨道跳转必须显式区分');
   assert.match(drag, /if \(jumpOnPointerDown\) applyCutTarget\(index, pointerTarget\)/, '只有空白轨道按下时可以立即跳转');
-  assert.match(drag, /beginCutDrag\(event, index, 'image', false\)/, '图片切线按下不能跳向命中区内的光标');
+  assert.match(drag, /beginCutDrag\(event, index, 'preview', false\)/, '预览间隙按下不能跳向命中区内的光标');
   assert.match(drag, /beginCutDrag\(event, index, 'slider', !thumb\)/, '现有滑块按下不跳，空白轨道仍可跳转');
   assert.match(drag, /applyCutTarget\(drag\.index, pointerTarget\)/, '拖动后滑块中心必须直接跟随光标');
   assert.doesNotMatch(component, /grabOffset|getCutDragGrabOffset|getCutDragTarget/, '拖动不应保留光标与滑块中心的偏移');
+});
+
+test('导出缓存 key 随切线变化，但预览交互 key 保持稳定', () => {
+  const keyBlock = sourceBetween(component, 'const geometryKey = useMemo', 'const hasPreparedFiles', 'geometry key block');
+  const readyPreview = sourceBetween(
+    component,
+    '        {decodedImage && geometry && splitState.status === \'ready\'',
+    '        {(decoding || preparing || saving)',
+    'ready preview usage',
+  );
+
+  assert.match(keyBlock, /const geometryKey = useMemo/, '完整几何 key 必须保留');
+  assert.match(keyBlock, /geometry\.cuts\.join\(','\)/, '导出准备 key 必须随实际切线变化');
+  const interactionKey = keyBlock.match(/const interactionKey = useMemo\(\(\) => \{[\s\S]*?\n  \}, \[geometry, splitState\.source\]\);/)?.[0];
+  assert.ok(interactionKey, '预览必须声明独立的交互 key');
+  assert.doesNotMatch(interactionKey, /cuts/, '交互 key 不能把可变切线位置编码进去');
+  assert.match(readyPreview, /<SplitPreview[\s\S]*key=\{interactionKey\}/, '预览必须使用独立的稳定交互 key');
+  assert.doesNotMatch(readyPreview, /key=\{geometryKey\}/, '预览不能复用导出几何 key');
+  assert.match(component, /preparedKey === geometryKey/, '准备好的导出文件仍必须按完整几何 key 命中');
 });
 
 test('点击微抖未达到阈值时不启动拖动，达到阈值后才直接跟随光标', async () => {
@@ -230,7 +275,7 @@ test('custom count replaces its third slot and preview layout follows the split 
   const countControls = sourceBetween(
     component,
     '<SettingGroup label={copy(\'countLabel\')}>',
-    '<SettingGroup label={copy(\'ratioLabel\')}>',
+    '<SettingGroup label={copy(\'ratioLabel\')} wide>',
     'slice count controls',
   );
 
@@ -249,6 +294,36 @@ test('custom count replaces its third slot and preview layout follows the split 
   assert.match(styles, /\.image-splitter-slice-card--vertical \.image-splitter-slice-media\s*\{[^}]*width:\s*100%[^}]*height:\s*100%/s, 'vertical slice media must share the row height even when their widths round to subpixels');
   assert.match(styles, /\.image-splitter-slice-card--horizontal \.image-splitter-slice-media\s*\{[^}]*width:\s*100%/s, 'horizontal slice media must share one width');
   assert.match(styles, /\.image-splitter-preview-layout--horizontal\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+5\.5rem/s, 'horizontal save buttons must keep a separate right-side column');
+});
+
+test('自由编辑与切片预览合并为一个 Preview & adjust 工作区', () => {
+  const root = sourceBetween(
+    component,
+    'return (\n    <div className="image-splitter-tool">',
+    'function SettingGroup(',
+    'tool root',
+  );
+  const preview = sourceBetween(component, 'function SplitPreview(', 'function SlicePreview(', 'merged preview');
+
+  assert.equal(countMatches(root, /<SplitPreview\b/g), 1, '就绪状态只能渲染一个预览工作区');
+  assert.doesNotMatch(root, /<FreeCutEditor\b/, '自由模式不能再额外渲染一张编辑器图片');
+  assert.match(preview, /copy\('previewAndAdjust'\)/, '合并工作区需要使用新的统一标题');
+  assert.match(preview, /image-splitter-preview-cut-handle/, '切片间隙本身应保留直接拖动入口');
+  assert.match(preview, /<FreeCutEditor\b/, '自由模式的滑条必须嵌入合并工作区');
+});
+
+test('桌面设置区按设计稿并排，窄屏仍保持单列', () => {
+  const root = sourceBetween(
+    component,
+    'return (\n    <div className="image-splitter-tool">',
+    'function SettingGroup(',
+    'tool root',
+  );
+
+  assert.match(root, /<SettingGroup label=\{copy\('ratioLabel'\)\} wide>/, '切分比例应显式跨越桌面两列');
+  assert.match(styles, /@media \(min-width:\s*900px\)\s*\{[\s\S]*?\.image-splitter-settings\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/, '桌面设置区应形成方向与数量两列');
+  assert.match(styles, /\.image-splitter-setting-group--wide\s*\{[^}]*grid-column:\s*1\s*\/\s*-1/s, '比例组选项应横跨完整设置宽度');
+  assert.match(styles, /@media \(max-width:\s*767px\)\s*\{[\s\S]*?\.image-splitter-count-row\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/, '手机端应继续使用原有单列设置和三槽数量控件');
 });
 
 test('preview geometry and per-slice save controls have independent layout tracks in both directions', () => {

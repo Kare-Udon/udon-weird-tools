@@ -50,6 +50,7 @@ import {
   getCutKeyboardTarget,
   getCutPointerRatio,
   getNearestCutIndex,
+  getSlicedPreviewPointerRatio,
   hasCutDragCrossedThreshold,
   type CutPointerPosition,
 } from './image-splitter/cut-input';
@@ -62,7 +63,7 @@ type ImageSplitterToolProps = {
 type CountChoice = 'three' | 'four' | 'custom';
 type ProcessKind = 'decoding' | 'preparing' | 'saving';
 type Copy = (key: ImageSplitterUiKey, values?: Record<string, string | number>) => string;
-type CutDragSource = 'image' | 'slider';
+type CutDragSource = 'preview' | 'slider';
 type CutDrag = {
   index: number;
   pointerId: number;
@@ -75,6 +76,7 @@ type CutDrag = {
 const IMAGE_ACCEPT = 'image/*,.avif';
 const PREPARE_DELAY_MS = 160;
 const CUT_DRAG_THRESHOLD_PX = 4;
+const PREVIEW_GAP_PX = 6;
 
 export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
   const [splitState, setSplitState] = useState<ImageSplitterState>(() => createImageSplitterState());
@@ -100,7 +102,7 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
   const [mobileCanShare, setMobileCanShare] = useState<boolean | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const editorImageRef = useRef<HTMLImageElement | null>(null);
+  const previewListRef = useRef<HTMLDivElement | null>(null);
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
   const countInputRef = useRef<HTMLInputElement | null>(null);
   const decodeControllerRef = useRef<AbortController | null>(null);
@@ -138,6 +140,18 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
       geometry.count,
       geometry.mode,
       geometry.cuts.join(','),
+    ].join('|');
+  }, [geometry, splitState.source]);
+
+  const interactionKey = useMemo(() => {
+    if (!geometry || !splitState.source) return '';
+    return [
+      splitState.source.key,
+      geometry.width,
+      geometry.height,
+      geometry.direction,
+      geometry.count,
+      geometry.mode,
     ].join('|');
   }, [geometry, splitState.source]);
 
@@ -473,20 +487,25 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
     setSplitState(result.state);
   }
 
-  function getImagePointerTarget(event: ReactPointerEvent<HTMLElement>): number | null {
-    const image = editorImageRef.current;
+  function getPreviewPointerTarget(event: ReactPointerEvent<HTMLElement>, index: number): number | null {
+    const preview = previewListRef.current;
     const currentState = splitStateRef.current;
     const currentAxisLength = currentState.source
       ? getSplitAxisLength(currentState.source.width, currentState.source.height, currentState.direction)
       : 0;
-    if (!image || currentAxisLength < 2) return null;
+    if (!preview || currentAxisLength < 2) return null;
 
-    const rect = image.getBoundingClientRect();
+    const rect = preview.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return null;
-    const ratio = currentState.direction === 'vertical'
-      ? (event.clientX - rect.left) / rect.width
-      : (event.clientY - rect.top) / rect.height;
-    return Math.round(clamp(ratio, 0, 1) * currentAxisLength);
+    const ratio = getSlicedPreviewPointerRatio(
+      currentState.direction,
+      rect,
+      event,
+      index,
+      currentState.cuts.length,
+      PREVIEW_GAP_PX,
+    );
+    return ratio === null ? null : Math.round(ratio * currentAxisLength);
   }
 
   function getSliderPointerTarget(event: ReactPointerEvent<HTMLElement>): number | null {
@@ -524,7 +543,9 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
     jumpOnPointerDown: boolean,
   ) {
     if (saving || splitStateRef.current.mode !== 'free') return;
-    const pointerTarget = source === 'image' ? getImagePointerTarget(event) : getSliderPointerTarget(event);
+    const pointerTarget = source === 'preview'
+      ? getPreviewPointerTarget(event, index)
+      : getSliderPointerTarget(event);
     if (pointerTarget === null || !Number.isInteger(splitStateRef.current.cuts[index])) return;
 
     event.preventDefault();
@@ -544,7 +565,7 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
   }
 
   function handleCutPointerDown(event: ReactPointerEvent<HTMLElement>, index: number) {
-    beginCutDrag(event, index, 'image', false);
+    beginCutDrag(event, index, 'preview', false);
   }
 
   function handleSliderPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
@@ -577,7 +598,9 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
       )) return;
       drag.started = true;
     }
-    const pointerTarget = drag.source === 'image' ? getImagePointerTarget(event) : getSliderPointerTarget(event);
+    const pointerTarget = drag.source === 'preview'
+      ? getPreviewPointerTarget(event, drag.index)
+      : getSliderPointerTarget(event);
     if (pointerTarget !== null) applyCutTarget(drag.index, pointerTarget);
   }
 
@@ -822,7 +845,7 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
             </div>
           </SettingGroup>
 
-          <SettingGroup label={copy('ratioLabel')}>
+          <SettingGroup label={copy('ratioLabel')} wide>
             <div className="image-splitter-option-grid image-splitter-option-grid--two" role="group" aria-label={copy('ratioLabel')}>
               <OptionButton
                 active={splitState.mode === 'equal'}
@@ -846,17 +869,18 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
           <SourceImageState copy={copy} previewUrl={decodedImage.previewUrl} source={splitState.source} />
         )}
 
-        {decodedImage && geometry && splitState.mode === 'free' && splitState.status === 'ready' && splitState.source && (
-          <FreeCutEditor
+        {decodedImage && geometry && splitState.status === 'ready' && splitState.source && selectedFile && (
+          <SplitPreview
+            key={interactionKey}
             copy={copy}
+            geometry={geometry}
             previewUrl={decodedImage.previewUrl}
-            direction={splitState.direction}
             source={splitState.source}
+            adjustable={splitState.mode === 'free'}
             cuts={splitState.cuts}
             symmetric={splitState.symmetric}
-            disabled={saving}
             activeCutIndex={activeCutIndex}
-            imageRef={editorImageRef}
+            previewListRef={previewListRef}
             sliderTrackRef={sliderTrackRef}
             onSymmetricChange={(value) => applySplitState(setImageSplitterSymmetric(splitStateRef.current, value))}
             onPointerDown={handleCutPointerDown}
@@ -867,17 +891,9 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
             onSliderFocus={setActiveCutIndex}
             onSliderBlur={handleSliderBlur}
             onSliderKeyDown={handleSliderKeyDown}
-          />
-        )}
-
-        {decodedImage && geometry && splitState.status === 'ready' && splitState.source && selectedFile && (
-          <SplitPreview
-            key={geometryKey}
-            copy={copy}
-            geometry={geometry}
-            previewUrl={decodedImage.previewUrl}
             onSave={(index) => void saveSlice(index)}
             disabled={!canSave || saving}
+            adjustmentDisabled={saving}
           />
         )}
 
@@ -925,9 +941,9 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
   );
 }
 
-function SettingGroup({ label, children }: { label: string; children: ReactNode }) {
+function SettingGroup({ label, children, wide = false }: { label: string; children: ReactNode; wide?: boolean }) {
   return (
-    <div className="image-splitter-setting-group">
+    <div className={wide ? 'image-splitter-setting-group image-splitter-setting-group--wide' : 'image-splitter-setting-group'}>
       <span className="image-splitter-field-label">{label}</span>
       {children}
     </div>
@@ -1004,17 +1020,12 @@ function SourceImageState({
 
 function FreeCutEditor({
   copy,
-  previewUrl,
   direction,
   source,
   cuts,
-  symmetric,
   disabled,
   activeCutIndex,
-  imageRef,
   sliderTrackRef,
-  onSymmetricChange,
-  onPointerDown,
   onPointerMove,
   onPointerUp,
   onPointerCancel,
@@ -1024,17 +1035,12 @@ function FreeCutEditor({
   onSliderKeyDown,
 }: {
   copy: Copy;
-  previewUrl: string;
   direction: SplitDirection;
   source: { width: number; height: number };
   cuts: number[];
-  symmetric: boolean;
   disabled: boolean;
   activeCutIndex: number | null;
-  imageRef: RefObject<HTMLImageElement | null>;
   sliderTrackRef: RefObject<HTMLDivElement | null>;
-  onSymmetricChange: (value: boolean) => void;
-  onPointerDown: (event: ReactPointerEvent<HTMLElement>, index: number) => void;
   onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
   onPointerUp: (event: ReactPointerEvent<HTMLElement>) => void;
   onPointerCancel: (event: ReactPointerEvent<HTMLElement>) => void;
@@ -1045,99 +1051,49 @@ function FreeCutEditor({
 }) {
   const axisLength = direction === 'vertical' ? source.width : source.height;
   const sliderOrientation = direction === 'horizontal' ? 'vertical' : 'horizontal';
-  const contentStyle = { '--image-splitter-source-ratio': String(source.width / source.height) } as CSSProperties;
 
   return (
-    <section className="image-splitter-editor" aria-labelledby="image-splitter-editor-title">
-      <div className="image-splitter-editor-heading">
-        <h2 id="image-splitter-editor-title">{copy('adjustCuts')}</h2>
-        <label className="image-splitter-symmetric-control">
-          <input type="checkbox" checked={symmetric} disabled={disabled} onChange={(event) => onSymmetricChange(event.currentTarget.checked)} />
-          <span>{copy('symmetric')}</span>
-        </label>
-      </div>
-
-      <div className={`image-splitter-editor-content image-splitter-editor-content--${direction}`} style={contentStyle}>
-        <div className="image-splitter-editor-media">
-          <div className="image-splitter-editor-image-frame">
-            <img
-              ref={imageRef}
-              className="image-splitter-editor-image"
-              src={previewUrl}
-              alt=""
-              draggable={false}
-            />
-            {cuts.map((cut, index) => {
-              const position = `${(cut / axisLength) * 100}%`;
-              const style = direction === 'vertical' ? { left: position } : { top: position };
-              const pairedIndex = cuts.length - 1 - index;
-              const active = activeCutIndex === index || (symmetric && activeCutIndex === pairedIndex);
-              return (
-                <div
-                  key={`cut-${index}`}
-                  className={[
-                    'image-splitter-cut-line',
-                    direction === 'vertical' ? 'image-splitter-cut-line--vertical' : 'image-splitter-cut-line--horizontal',
-                    active ? 'image-splitter-cut-line--active' : '',
-                  ].filter(Boolean).join(' ')}
-                  style={style}
-                  aria-hidden="true"
-                  data-cut-line="true"
-                  data-cut-index={index}
-                  onPointerDown={(event) => onPointerDown(event, index)}
-                  onPointerMove={onPointerMove}
-                  onPointerUp={onPointerUp}
-                  onPointerCancel={onPointerCancel}
-                  onLostPointerCapture={onPointerUp}
-                >
-                  <span />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div
-          ref={sliderTrackRef}
-          className={`image-splitter-slider-track image-splitter-slider-track--${sliderOrientation}`}
-          onPointerDownCapture={onSliderPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerCancel}
-          onLostPointerCapture={onPointerUp}
-        >
-          <span className="image-splitter-slider-rail" aria-hidden="true" />
-          {cuts.map((cut, index) => {
-            const position = `${(cut / axisLength) * 100}%`;
-            const positionStyle = sliderOrientation === 'vertical' ? { top: position } : { left: position };
-            const legalMin = index === 0 ? 1 : cuts[index - 1] + 1;
-            const legalMax = index === cuts.length - 1 ? axisLength - 1 : cuts[index + 1] - 1;
-            return (
-              <button
-                key={`slider-${index}`}
-                className={activeCutIndex === index ? 'image-splitter-slider-thumb image-splitter-slider-thumb--active' : 'image-splitter-slider-thumb'}
-                type="button"
-                role="slider"
-                aria-label={copy('sliderLabel', { index: index + 1, count: cuts.length })}
-                aria-orientation={sliderOrientation}
-                aria-valuemin={legalMin}
-                aria-valuemax={legalMax}
-                aria-valuenow={cut}
-                aria-valuetext={copy('sliderValue', { value: cut })}
-                data-slider-index={index}
-                disabled={disabled}
-                onFocus={() => onSliderFocus(index)}
-                onBlur={onSliderBlur}
-                onKeyDown={(event) => onSliderKeyDown(event, index)}
-                style={{ ...positionStyle, zIndex: activeCutIndex === index ? cuts.length + 2 : index + 1 }}
-              >
-                <span aria-hidden="true" />
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </section>
+    <div
+      ref={sliderTrackRef}
+      className={`image-splitter-slider-track image-splitter-slider-track--${sliderOrientation}`}
+      role="group"
+      aria-label={copy('adjustCuts')}
+      onPointerDownCapture={onSliderPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerCancel}
+      onLostPointerCapture={onPointerUp}
+    >
+      <span className="image-splitter-slider-rail" aria-hidden="true" />
+      {cuts.map((cut, index) => {
+        const position = `${(cut / axisLength) * 100}%`;
+        const positionStyle = sliderOrientation === 'vertical' ? { top: position } : { left: position };
+        const legalMin = index === 0 ? 1 : cuts[index - 1] + 1;
+        const legalMax = index === cuts.length - 1 ? axisLength - 1 : cuts[index + 1] - 1;
+        return (
+          <button
+            key={`slider-${index}`}
+            className={activeCutIndex === index ? 'image-splitter-slider-thumb image-splitter-slider-thumb--active' : 'image-splitter-slider-thumb'}
+            type="button"
+            role="slider"
+            aria-label={copy('sliderLabel', { index: index + 1, count: cuts.length })}
+            aria-orientation={sliderOrientation}
+            aria-valuemin={legalMin}
+            aria-valuemax={legalMax}
+            aria-valuenow={cut}
+            aria-valuetext={copy('sliderValue', { value: cut })}
+            data-slider-index={index}
+            disabled={disabled}
+            onFocus={() => onSliderFocus(index)}
+            onBlur={onSliderBlur}
+            onKeyDown={(event) => onSliderKeyDown(event, index)}
+            style={{ ...positionStyle, zIndex: activeCutIndex === index ? cuts.length + 2 : index + 1 }}
+          >
+            <span aria-hidden="true" />
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
@@ -1145,14 +1101,48 @@ function SplitPreview({
   copy,
   geometry,
   previewUrl,
+  source,
+  adjustable,
+  cuts,
+  symmetric,
+  activeCutIndex,
+  previewListRef,
+  sliderTrackRef,
+  onSymmetricChange,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onPointerCancel,
+  onSliderPointerDown,
+  onSliderFocus,
+  onSliderBlur,
+  onSliderKeyDown,
   onSave,
   disabled,
+  adjustmentDisabled,
 }: {
   copy: Copy;
   geometry: ImageSplitterOutput;
   previewUrl: string;
+  source: { width: number; height: number };
+  adjustable: boolean;
+  cuts: number[];
+  symmetric: boolean;
+  activeCutIndex: number | null;
+  previewListRef: RefObject<HTMLDivElement | null>;
+  sliderTrackRef: RefObject<HTMLDivElement | null>;
+  onSymmetricChange: (value: boolean) => void;
+  onPointerDown: (event: ReactPointerEvent<HTMLElement>, index: number) => void;
+  onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
+  onPointerUp: (event: ReactPointerEvent<HTMLElement>) => void;
+  onPointerCancel: (event: ReactPointerEvent<HTMLElement>) => void;
+  onSliderPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
+  onSliderFocus: (index: number) => void;
+  onSliderBlur: () => void;
+  onSliderKeyDown: (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => void;
   onSave: (index: number) => void;
   disabled: boolean;
+  adjustmentDisabled: boolean;
 }) {
   const [hoveredSlice, setHoveredSlice] = useState<number | null>(null);
   const [focusedSlice, setFocusedSlice] = useState<number | null>(null);
@@ -1163,6 +1153,7 @@ function SplitPreview({
   const columns = geometry.direction === 'vertical'
     ? geometry.slices.map((slice) => `minmax(0, ${slice.width}fr)`).join(' ')
     : undefined;
+  const axisLength = geometry.direction === 'vertical' ? source.width : source.height;
 
   useEffect(() => {
     const viewport = previewViewportRef.current;
@@ -1243,9 +1234,22 @@ function SplitPreview({
 
   return (
     <section className="image-splitter-preview-section" aria-labelledby="image-splitter-preview-title">
-      <h2 id="image-splitter-preview-title">{copy('preview')}</h2>
+      <div className="image-splitter-editor-heading">
+        <h2 id="image-splitter-preview-title">{copy('previewAndAdjust')}</h2>
+        {adjustable && (
+          <label className="image-splitter-symmetric-control">
+            <input
+              type="checkbox"
+              checked={symmetric}
+              disabled={adjustmentDisabled}
+              onChange={(event) => onSymmetricChange(event.currentTarget.checked)}
+            />
+            <span>{copy('symmetric')}</span>
+          </label>
+        )}
+      </div>
       <div
-        className={`image-splitter-preview-layout image-splitter-preview-layout--${geometry.direction}`}
+        className={`image-splitter-preview-layout image-splitter-preview-layout--${geometry.direction} image-splitter-preview-layout--${adjustable ? 'adjustable' : 'equal'}`}
         style={{ minHeight: saveRailLayout?.minimumHeight }}
       >
         <div
@@ -1254,11 +1258,13 @@ function SplitPreview({
           onScroll={() => synchronizeScroll(previewViewportRef.current, saveRailRef.current)}
         >
           <div
+            ref={previewListRef}
             className={`image-splitter-preview-list image-splitter-preview-list--${geometry.direction}`}
             style={{
               gridTemplateColumns: columns,
               '--image-splitter-preview-ratio': geometry.width / geometry.height,
               '--image-splitter-preview-gap-count': geometry.count - 1,
+              '--image-splitter-preview-gap': `${PREVIEW_GAP_PX}px`,
             } as CSSProperties}
           >
             {geometry.slices.map((slice) => (
@@ -1273,8 +1279,55 @@ function SplitPreview({
                 highlighted={highlightedSlice === slice.index}
               />
             ))}
+            {adjustable && cuts.map((cut, index) => {
+              const ratio = cut / axisLength;
+              const gapOffset = (index + 0.5 - ratio * cuts.length) * PREVIEW_GAP_PX;
+              const position = `calc(${ratio * 100}% + ${gapOffset}px)`;
+              const positionStyle = geometry.direction === 'vertical' ? { left: position } : { top: position };
+              const pairedIndex = cuts.length - 1 - index;
+              const active = activeCutIndex === index || (symmetric && activeCutIndex === pairedIndex);
+              return (
+                <div
+                  key={`preview-cut-${index}`}
+                  className={[
+                    'image-splitter-preview-cut-handle',
+                    `image-splitter-preview-cut-handle--${geometry.direction}`,
+                    active ? 'image-splitter-preview-cut-handle--active' : '',
+                  ].filter(Boolean).join(' ')}
+                  style={positionStyle}
+                  aria-hidden="true"
+                  data-cut-line="true"
+                  data-cut-index={index}
+                  onPointerDown={(event) => onPointerDown(event, index)}
+                  onPointerMove={onPointerMove}
+                  onPointerUp={onPointerUp}
+                  onPointerCancel={onPointerCancel}
+                  onLostPointerCapture={onPointerUp}
+                >
+                  <span />
+                </div>
+              );
+            })}
           </div>
         </div>
+        {adjustable && (
+          <FreeCutEditor
+            copy={copy}
+            direction={geometry.direction}
+            source={source}
+            cuts={cuts}
+            disabled={adjustmentDisabled}
+            activeCutIndex={activeCutIndex}
+            sliderTrackRef={sliderTrackRef}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerCancel}
+            onSliderPointerDown={onSliderPointerDown}
+            onSliderFocus={onSliderFocus}
+            onSliderBlur={onSliderBlur}
+            onSliderKeyDown={onSliderKeyDown}
+          />
+        )}
         <div
           className="image-splitter-preview-save-grid"
           ref={saveRailRef}
@@ -1415,8 +1468,4 @@ function isMobilePreference(): boolean {
   if (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) return true;
   return window.matchMedia('(max-width: 767px)').matches ||
     (window.matchMedia('(pointer: coarse)').matches && navigator.maxTouchPoints > 0);
-}
-
-function clamp(value: number, minimum: number, maximum: number): number {
-  return Math.min(Math.max(value, minimum), maximum);
 }
