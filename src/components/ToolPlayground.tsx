@@ -20,6 +20,7 @@ const Base64CodecTool = lazy(() => import('./Base64CodecTool'));
 const XPhotoUploadPreprocessorTool = lazy(() => import('./XPhotoUploadPreprocessorTool'));
 const CodexSessionAnalyzerTool = lazy(() => import('./CodexSessionAnalyzerTool'));
 const ImageSplitterTool = lazy(() => import('./ImageSplitterTool'));
+const UnityPackageExtractorTool = lazy(() => import('./UnityPackageExtractorTool'));
 const FAVORITE_RESULTS_ENTRY_ID = 'favorite-results';
 
 export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
@@ -63,10 +64,18 @@ export default function ToolPlayground({ slug, locale }: ToolPlaygroundProps) {
     );
   }
 
+  if (slug === 'unitypackage-extractor') {
+    return (
+      <Suspense fallback={<div className="panel muted-panel">{t(locale, 'toolLoading')}</div>}>
+        <UnityPackageExtractorTool locale={locale} />
+      </Suspense>
+    );
+  }
+
   return <DefaultToolPlayground slug={slug} locale={locale} />;
 }
 
-function DefaultToolPlayground({ slug, locale }: ToolPlaygroundProps) {
+export function DefaultToolPlayground({ slug, locale }: ToolPlaygroundProps) {
   const autoPreview = slug === 'unicode-fancy-text';
   const [module, setModule] = useState<ToolModule<any, unknown> | null>(null);
   const [values, setValues] = useState<FormValues>({});

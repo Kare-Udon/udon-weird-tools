@@ -13,9 +13,9 @@ export const inputFields = [
       ja: 'Unitypackage ファイル',
     },
     helperText: {
-      'zh-CN': '文件只在浏览器本地处理。第一版限制上传文件不超过 80 MiB，解包后 ZIP 不超过 160 MiB。',
-      en: 'The file is processed only in your browser. This first version limits uploads to 80 MiB and the generated ZIP to 160 MiB.',
-      ja: 'ファイルはブラウザ内だけで処理されます。初版ではアップロードは 80 MiB、生成 ZIP は 160 MiB までです。',
+      'zh-CN': '文件只在浏览器本地处理。兼容时会流式写入新建磁盘子目录；不兼容时保留 ZIP 回退，输入限制 80 MiB、生成 ZIP 限制 160 MiB。',
+      en: 'The file is processed only in your browser. Supported browsers stream into a new disk subdirectory; the ZIP fallback keeps the 80 MiB input and 160 MiB ZIP limits.',
+      ja: 'ファイルはブラウザ内だけで処理されます。対応ブラウザでは新しいディスクのサブフォルダーへストリーミングし、ZIP フォールバックでは入力 80 MiB、生成 ZIP 160 MiB の上限を維持します。',
     },
   },
 ] as const satisfies ToolField[];

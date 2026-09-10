@@ -1,5 +1,19 @@
 [
   {
+    "date": "2026-09-10",
+    "items": [
+      {
+        "id": "2026-09-10-unitypackage-streaming",
+        "commitSubject": "支持 Unitypackage 大文件流式解包",
+        "summary": {
+          "en": "Unitypackage Extractor now streams large packages directly to a selected folder in supported browsers, while keeping ZIP downloads as a fallback.",
+          "ja": "Unitypackage 展開ツールが、対応ブラウザで大きなパッケージを選択したフォルダーへ直接展開できるようになりました。非対応時は従来の ZIP ダウンロードを利用できます。",
+          "zh-CN": "Unitypackage 解包工具支持在兼容浏览器中将大文件流式解包到所选目录，不兼容时保留原有 ZIP 下载。"
+        }
+      }
+    ]
+  },
+  {
     "date": "2026-09-08",
     "items": [
       {
