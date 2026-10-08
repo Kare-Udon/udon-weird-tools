@@ -1,6 +1,27 @@
 # 图像切分验收记录
 
-首次验收：2026-08-31；最近交互回归复核：2026-09-08。整体视觉继续沿用 v3，未采用 v4 桌面居中方案；自由编辑与切片预览已按最新设计合并。连续调整回归已修复，当前验收边界见下节；原生系统保存、手机真机及既有全项目类型检查问题仍保留。合并前基线为 `7948dad`，本轮源码交付以包含本记录的本地提交为准，未推送或部署。
+首次验收：2026-08-31；最近交互回归复核：2026-10-08。整体视觉继续沿用 v3，自由编辑与切片预览共用工作区。当前修复及验收边界见下节；原生系统保存、手机真机及全项目类型检查问题仍保留。
+
+## 2026-10-08 手机自由裁切拖动回归
+
+- 问题设备由用户确认为 iPhone / Safari。本轮使用真实浏览器引擎和触控协议复现，未连接 iPhone 真机。
+- 根因一：开始拖动会使导出准备状态失效，状态提示或 ZIP 回退入口消失，页面高度缩短；靠近页面底部时，浏览器钳制滚动位置，滑轨随之移动。修复前 Chromium 与 WebKit 均捕获 42–50px 页面跳动。
+- 根因二：相邻切线拉近后，44px 滑块命中区重叠，已激活滑块的高层级遮住下一条。320px 横切连续调整稳定复现下一条切线不动；片缝控件存在同类命中风险。
+- 修复：拖动期间保留工作区按下时的高度，网格内容保持顶部对齐，松手恢复正常布局；滑块与片缝的重叠区域根据实际中心距离选择切线，非重叠区域保留原索引，保存按钮仍按明确片序操作。
+- 永久浏览器守卫：`src/components/image-splitter/interaction.browser.test.mjs`。覆盖 Chromium / WebKit、1280 / 390 / 320px、两个裁切方向、连续拖动两条滑块及片缝、拖动期间滚动稳定、松手释放预留高度、切片重新准备以及整页不横向溢出。正式构建预览 12/12 通过，无跳过；专项 Node 测试 77/77 通过。
+- 工具校验、静态构建、offline、39 个 PWA manifest 校验通过。完整 `npm run typecheck` 因 Node 堆内存不足退出；图片裁切组件及其依赖的定向 `tsc --noEmit` 检查通过，未把它当作全项目检查通过。
+
+浏览器回归使用已有 Playwright 测试安装，不增加工具运行时依赖。先启动正式预览，避免 Astro 开发工具栏遮挡窄屏控件：
+
+```sh
+ASTRO_TELEMETRY_DISABLED=1 npm run build
+ASTRO_TELEMETRY_DISABLED=1 npm run preview -- --host 127.0.0.1 --port 4323
+# 在另一个终端运行；需要已安装相应浏览器运行时。
+IMAGE_SPLITTER_BROWSER=chromium node --test src/components/image-splitter/interaction.browser.test.mjs
+IMAGE_SPLITTER_BROWSER=webkit node --test src/components/image-splitter/interaction.browser.test.mjs
+```
+
+已有共享 Playwright 安装可通过 `IMAGE_SPLITTER_PLAYWRIGHT_MODULE` 指定模块路径；已有浏览器可通过 `IMAGE_SPLITTER_BROWSER_EXECUTABLE` 指定可执行文件。`IMAGE_SPLITTER_TEST_URL` 可覆盖预览地址。未找到 Playwright 时用例明确跳过，不能算作浏览器验收通过。
 
 ## 2026-09-08 连续调整回归
 

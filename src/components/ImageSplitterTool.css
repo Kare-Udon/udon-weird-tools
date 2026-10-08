@@ -4,6 +4,8 @@
 
 .image-splitter-panel {
   display: grid;
+  /* 拖动时预留高度留在底部，不让 grid 拉伸滑轨或移动预览。 */
+  align-content: start;
   grid-template-columns: minmax(0, 1fr);
   min-width: 0;
   gap: clamp(1.25rem, 3vw, 1.7rem);

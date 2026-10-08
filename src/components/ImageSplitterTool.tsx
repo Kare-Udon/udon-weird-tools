@@ -71,6 +71,7 @@ type CutDrag = {
   source: CutDragSource;
   startPointer: CutPointerPosition;
   started: boolean;
+  panelHeight: number;
 };
 
 const IMAGE_ACCEPT = 'image/*,.avif';
@@ -102,6 +103,7 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
   const [mobileCanShare, setMobileCanShare] = useState<boolean | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const panelRef = useRef<HTMLElement | null>(null);
   const previewListRef = useRef<HTMLDivElement | null>(null);
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
   const countInputRef = useRef<HTMLInputElement | null>(null);
@@ -558,6 +560,8 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
       source,
       startPointer: { clientX: event.clientX, clientY: event.clientY },
       started: jumpOnPointerDown,
+      // 状态行和保存回退会在失效时消失；保留高度，避免页面底部滚动被钳制。
+      panelHeight: panelRef.current?.getBoundingClientRect().height ?? 0,
     };
     setDraggingCut(index);
     invalidatePrepared();
@@ -565,7 +569,31 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
   }
 
   function handleCutPointerDown(event: ReactPointerEvent<HTMLElement>, index: number) {
+    if (previewListRef.current) {
+      index = getOverlappingCutControlIndex(
+        previewListRef.current, '.image-splitter-preview-cut-handle', event, index,
+      );
+    }
     beginCutDrag(event, index, 'preview', false);
+  }
+
+  function getOverlappingCutControlIndex(
+    container: HTMLElement,
+    selector: string,
+    event: ReactPointerEvent<HTMLElement>,
+    fallbackIndex: number,
+  ): number {
+    const hits = Array.from(container.querySelectorAll<HTMLElement>(selector))
+      .map((control, index) => ({ index, rect: control.getBoundingClientRect() }))
+      .filter(({ rect }) => event.clientX >= rect.left && event.clientX <= rect.right &&
+        event.clientY >= rect.top && event.clientY <= rect.bottom);
+    if (hits.length < 2) return fallbackIndex;
+    const vertical = splitStateRef.current.direction === 'vertical';
+    const nearest = getNearestCutIndex(
+      hits.map(({ rect }) => vertical ? rect.left + rect.width / 2 : rect.top + rect.height / 2),
+      vertical ? event.clientX : event.clientY,
+    );
+    return nearest === null ? fallbackIndex : hits[nearest].index;
   }
 
   function handleSliderPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
@@ -575,8 +603,9 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
       ? target.closest<HTMLButtonElement>('[data-slider-index]')
       : null;
     const thumb = candidateThumb?.parentElement === event.currentTarget ? candidateThumb : null;
+    // 窄屏或近邻切线处命中区会重叠，滑块与片缝统一按实际中心选取。
     const index = thumb
-      ? Number(thumb.dataset.sliderIndex)
+      ? getOverlappingCutControlIndex(event.currentTarget, '[data-slider-index]', event, Number(thumb.dataset.sliderIndex))
       : getSliderIndexAtPointer(event);
     if (index !== null) {
       beginCutDrag(event, index, 'slider', !thumb);
@@ -715,7 +744,11 @@ export default function ImageSplitterTool({ locale }: ImageSplitterToolProps) {
 
   return (
     <div className="image-splitter-tool">
-      <section className="panel image-splitter-panel">
+      <section
+        ref={panelRef}
+        className="panel image-splitter-panel"
+        style={{ minHeight: draggingCut === null ? undefined : draggingCutRef.current?.panelHeight }}
+      >
         <div className="image-splitter-upload">
           <span className="image-splitter-field-label">{copy('uploadLabel')}</span>
           <div className="image-splitter-upload-row">
